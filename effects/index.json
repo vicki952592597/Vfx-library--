@@ -1,0 +1,17 @@
+[
+  { "name": "金色余烬粒子",     "cat": "环境与氛围", "file": "golden-embers.html",      "icon": "🔥", "author": "FX Lab" },
+  { "name": "极光天幕",         "cat": "环境与氛围", "file": "aurora-sky.html",          "icon": "🌌", "author": "FX Lab" },
+  { "name": "星尘雾气",         "cat": "环境与氛围", "file": "stardust-fog.html",        "icon": "✨", "author": "FX Lab" },
+  { "name": "体积光柱",         "cat": "环境与氛围", "file": "volumetric-light.html",    "icon": "💡", "author": "FX Lab" },
+  { "name": "按钮霓虹脉冲",     "cat": "UI与交互",   "file": "neon-pulse-btn.html",     "icon": "🔘", "author": "FX Lab" },
+  { "name": "数据流粒子连线",   "cat": "UI与交互",   "file": "data-flow.html",          "icon": "🔗", "author": "FX Lab" },
+  { "name": "拖拽弹性跟随",     "cat": "UI与交互",   "file": "elastic-drag.html",       "icon": "🎯", "author": "FX Lab" },
+  { "name": "进度环发光",       "cat": "UI与交互",   "file": "glow-progress.html",      "icon": "⭕", "author": "FX Lab" },
+  { "name": "SSR 卡面碎光",     "cat": "卡牌专属",   "file": "ssr-shimmer.html",        "icon": "💎", "author": "FX Lab" },
+  { "name": "全息投影卡背",     "cat": "卡牌专属",   "file": "hologram-card.html",      "icon": "🃏", "author": "FX Lab" },
+  { "name": "卡牌升星爆发",     "cat": "卡牌专属",   "file": "star-burst.html",         "icon": "⭐", "author": "FX Lab" },
+  { "name": "稀有度火焰边框",   "cat": "卡牌专属",   "file": "flame-border.html",       "icon": "🔥", "author": "FX Lab" },
+  { "name": "动态法线贴图",     "cat": "材质与遮罩", "file": "normal-map.html",         "icon": "🗺️", "author": "FX Lab" },
+  { "name": "溶解消散遮罩",     "cat": "材质与遮罩", "file": "dissolve-mask.html",      "icon": "💨", "author": "FX Lab" },
+  { "name": "水晶折射材质",     "cat": "材质与遮罩", "file": "crystal-refraction.html", "icon": "🔮", "author": "FX Lab" }
+]

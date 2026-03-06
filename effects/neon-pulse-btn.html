@@ -1,0 +1,36 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>按钮霓虹脉冲</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a15;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:40px;overflow:hidden;font-family:system-ui,sans-serif}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(100,60,255,0.06),transparent 70%);pointer-events:none}
+.neon-btn{position:relative;padding:18px 50px;font-size:18px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#fff;background:transparent;border:2px solid;cursor:pointer;overflow:hidden;transition:all 0.3s}
+.neon-btn.cyan{border-color:#0ff;color:#0ff;text-shadow:0 0 10px #0ff,0 0 40px #0ff;box-shadow:0 0 15px rgba(0,255,255,0.3),inset 0 0 15px rgba(0,255,255,0.1)}
+.neon-btn.pink{border-color:#f0f;color:#f0f;text-shadow:0 0 10px #f0f,0 0 40px #f0f;box-shadow:0 0 15px rgba(255,0,255,0.3),inset 0 0 15px rgba(255,0,255,0.1)}
+.neon-btn.gold{border-color:#fa0;color:#fa0;text-shadow:0 0 10px #fa0,0 0 40px #fa0;box-shadow:0 0 15px rgba(255,170,0,0.3),inset 0 0 15px rgba(255,170,0,0.1)}
+.neon-btn::before{content:'';position:absolute;top:-2px;left:-100%;width:100%;height:calc(100%+4px);background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);animation:sweep 2.5s ease-in-out infinite}
+.neon-btn:hover{transform:scale(1.05);filter:brightness(1.3)}
+@keyframes sweep{0%{left:-100%}50%{left:100%}100%{left:100%}}
+.neon-btn.pink::before{animation-delay:0.8s}
+.neon-btn.gold::before{animation-delay:1.6s}
+.neon-btn::after{content:'';position:absolute;inset:0;opacity:0;transition:opacity 0.3s}
+.neon-btn.cyan::after{background:radial-gradient(circle,rgba(0,255,255,0.15),transparent)}
+.neon-btn.pink::after{background:radial-gradient(circle,rgba(255,0,255,0.15),transparent)}
+.neon-btn.gold::after{background:radial-gradient(circle,rgba(255,170,0,0.15),transparent)}
+.neon-btn:hover::after{opacity:1}
+.pulse-ring{position:absolute;inset:-4px;border:2px solid;border-radius:inherit;opacity:0;animation:pulse 2s ease-out infinite}
+.neon-btn.cyan .pulse-ring{border-color:#0ff}
+.neon-btn.pink .pulse-ring{border-color:#f0f}
+.neon-btn.gold .pulse-ring{border-color:#fa0}
+@keyframes pulse{0%{opacity:0.6;transform:scale(1)}100%{opacity:0;transform:scale(1.15)}}
+.floor-glow{position:absolute;bottom:-60px;width:200px;height:60px;border-radius:50%;filter:blur(20px);animation:glow-pulse 2s ease-in-out infinite alternate}
+.neon-btn.cyan~.floor-glow{background:rgba(0,255,255,0.2)}
+.neon-btn.pink~.floor-glow{background:rgba(255,0,255,0.2)}
+.neon-btn.gold~.floor-glow{background:rgba(255,170,0,0.2)}
+@keyframes glow-pulse{from{opacity:0.5;transform:scaleX(0.8)}to{opacity:1;transform:scaleX(1.2)}}
+.group{position:relative;display:flex;flex-direction:column;align-items:center}
+</style></head><body>
+<div class="group"><button class="neon-btn cyan">ACTIVATE<span class="pulse-ring"></span></button><div class="floor-glow"></div></div>
+<div class="group"><button class="neon-btn pink">OVERRIDE<span class="pulse-ring"></span></button><div class="floor-glow"></div></div>
+<div class="group"><button class="neon-btn gold">EXECUTE<span class="pulse-ring"></span></button><div class="floor-glow"></div></div>
+</body></html>

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSR Saber 粒子特效</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;display:flex;justify-content:center;align-items:center;min-height:100vh;overflow:hidden}
+.wrap{position:relative;width:600px;height:800px}
+.wrap img{width:100%;height:100%;object-fit:contain;position:absolute;top:0;left:0;z-index:1}
+canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <img src="card.png" alt="SSR"/>
+  <canvas id="c"></canvas>
+</div>
+<script>
+(()=>{
+const cv=document.getElementById('c'),c=cv.getContext('2d'),wrap=document.querySelector('.wrap');
+const dpr=window.devicePixelRatio||1;
+function fit(){const r=wrap.getBoundingClientRect();cv.width=r.width*dpr;cv.height=r.height*dpr;cv.style.width=r.width+'px';cv.style.height=r.height+'px';c.setTransform(dpr,0,0,dpr,0,0)}
+fit();window.addEventListener('resize',fit);
+
+const W=600,H=800,CX=W/2,CY=H*0.5;
+const R=(a,b)=>a+Math.random()*(b-a);
+const TAU=Math.PI*2;
+
+// ==========================================
+//  AE Saber 风格粒子系统
+//  核心: 能量光线沿路径流动 + 电弧噪声 + 粒子飞散
+// ==========================================
+
+// --- 全屏覆盖的 Saber 路径(不依赖图片内容) ---
+// 多个环形路径，覆盖整张卡牌
+function makeCirclePath(centerX,centerY,radius,points){
+  const pts=[];
+  for(let i=0;i<points;i++){
+    const t=i/points*TAU;
+    pts.push({x:centerX+Math.cos(t)*radius, y:centerY+Math.sin(t)*radius});
+  }
+  return pts;
+}
+
+// 矩形路径(沿卡牌边缘)
+function makeRectPath(x,y,w,h,points){
+  const pts=[],per=2*(w+h);
+  for(let i=0;i<points;i++){
+    const d=i/points*per;
+    if(d<w) pts.push({x:x+d,y:y});
+    else if(d<w+h) pts.push({x:x+w,y:y+d-w});
+    else if(d<2*w+h) pts.push({x:x+w-(d-w-h),y:y+h});
+    else pts.push({x:x,y:y+h-(d-2*w-h)});
+  }
+  return pts;
+}
+
+// 菱形/钻石路径
+function makeDiamondPath(cx,cy,rx,ry,points){
+  const pts=[];
+  for(let i=0;i<points;i++){
+    const t=i/points*TAU;
+    // 超椭圆(菱形感)
+    const ct=Math.cos(t),st=Math.sin(t);
+    const r=1/Math.pow(Math.pow(Math.abs(ct),1.2)+Math.pow(Math.abs(st),1.2),1/1.2);
+    pts.push({x:cx+ct*r*rx, y:cy+st*r*ry});
+  }
+  return pts;
+}
+
+// 波浪水平线
+function makeWavePath(y,amp,freq,xStart,xEnd,points){
+  const pts=[];
+  for(let i=0;i<points;i++){
+    const t=i/(points-1);
+    const x=xStart+(xEnd-xStart)*t;
+    pts.push({x:x, y:y+Math.sin(t*TAU*freq)*amp});
+  }
+  return pts;
+}
+
+// 竖向S曲线
+function makeSCurve(x,yStart,yEnd,amp,points){
+  const pts=[];
+  for(let i=0;i<points;i++){
+    const t=i/(points-1);
+    const y=yStart+(yEnd-yStart)*t;
+    pts.push({x:x+Math.sin(t*TAU*1.5)*amp, y:y});
+  }
+  return pts;
+}
+
+// === Saber 光弧 ===
+class SaberBeam{
+  constructor(path,hue,sat,spd,width,glowSize){
+    this.path=path;this.hue=hue;this.sat=sat;
+    this.spd=spd;this.w=width;this.glow=glowSize;
+    this.head=R(0,path.length);
+    this.len=R(20,60);
+    this.noiseP=R(0,100);
+    this.flickP=R(0,TAU);
+    this.flickSpd=R(0.04,0.12);
+  }
+  update(){
+    this.head=(this.head+this.spd+this.path.length)%this.path.length;
+    this.noiseP+=0.12;
+    this.flickP+=this.flickSpd;
+  }
+  draw(){
+    const n=this.path.length;
+    const flick=0.55+0.45*Math.sin(this.flickP);
+    const seg=Math.floor(this.len);
+    c.save();c.lineCap='round';c.lineJoin='round';
+
+    // 3层渲染: 外发光 -> 中层 -> 核心
+    const layers=[
+      {widthMul:this.glow, alpha:flick*0.04, light:55},
+      {widthMul:this.glow*0.5, alpha:flick*0.12, light:70},
+      {widthMul:1, alpha:flick*0.85, light:92}
+    ];
+
+    for(const L of layers){
+      c.beginPath();
+      for(let i=0;i<=seg;i++){
+        const fadeT=i/seg; // 尾部渐淡
+        const idx=Math.floor((this.head-i+n)%n);
+        const pt=this.path[idx];
+        // 电弧噪声(只在核心层)
+        const nz=L.light>80?Math.sin(this.noiseP+i*0.6)*(1.5+Math.random()*1.5):0;
+        const px=pt.x+nz*(Math.cos(i*0.5));
+        const py=pt.y+nz*(Math.sin(i*0.5));
+        i===0?c.moveTo(px,py):c.lineTo(px,py);
+      }
+      const alpha=L.alpha;
+      c.strokeStyle=`hsla(${this.hue},${this.sat}%,${L.light}%,${alpha})`;
+      c.lineWidth=this.w*L.widthMul;
+      if(L.light<60){c.shadowColor=`hsla(${this.hue},${this.sat}%,60%,${alpha*0.8})`;c.shadowBlur=30;}
+      else c.shadowBlur=0;
+      c.stroke();
+    }
+    c.restore();
+  }
+}
+
+// === 飞散光粒子 ===
+class SparkParticle{
+  constructor(){this.alive=false}
+  emit(x,y,hue){
+    this.alive=true;
+    this.x=x;this.y=y;
+    const a=R(0,TAU),s=R(0.3,3);
+    this.vx=Math.cos(a)*s;
+    this.vy=Math.sin(a)*s;
+    this.life=1;this.decay=R(0.006,0.03);
+    this.r=R(0.4,2);this.hue=hue+R(-15,15);
+    this.grav=R(-0.02,0.02);
+  }
+  update(){
+    if(!this.alive)return;
+    this.x+=this.vx;this.y+=this.vy;
+    this.vy+=this.grav;
+    this.vx*=0.99;this.vy*=0.99;
+    this.life-=this.decay;
+    if(this.life<=0)this.alive=false;
+  }
+  draw(){
+    if(!this.alive)return;
+    const a=this.life;
+    const r=this.r*a+0.2;
+    const g=c.createRadialGradient(this.x,this.y,0,this.x,this.y,r*5);
+    g.addColorStop(0,`hsla(${this.hue},50%,95%,${a*0.95})`);
+    g.addColorStop(0.3,`hsla(${this.hue},70%,75%,${a*0.4})`);
+    g.addColorStop(1,`hsla(${this.hue},80%,50%,0)`);
+    c.beginPath();c.arc(this.x,this.y,r*5,0,TAU);
+    c.fillStyle=g;c.fill();
+  }
+}
+
+// === 闪烁亮点(Saber Flare) ===
+class Flare{
+  constructor(){this.reset()}
+  reset(){
+    // 随机分布在整张卡牌上
+    this.x=R(50,W-50);
+    this.y=R(50,H-50);
+    this.phase=R(0,TAU);
+    this.speed=R(0.02,0.1);
+    this.maxR=R(1,4);
+    this.hue=R(230,310);
+    this.ttl=R(60,250);this.age=0;
+  }
+  update(){
+    this.phase+=this.speed;
+    this.age++;
+    if(this.age>this.ttl)this.reset();
+  }
+  draw(){
+    const env=Math.sin(this.age/this.ttl*Math.PI);
+    const f=0.5+0.5*Math.sin(this.phase);
+    const al=env*f;
+    if(al<0.015)return;
+    const sz=this.maxR*f;
+    c.save();c.translate(this.x,this.y);c.globalAlpha=al;
+
+    // 光晕
+    const g=c.createRadialGradient(0,0,0,0,0,sz*3);
+    g.addColorStop(0,`hsla(${this.hue},35%,97%,1)`);
+    g.addColorStop(0.4,`hsla(${this.hue},65%,75%,0.5)`);
+    g.addColorStop(1,`hsla(${this.hue},80%,50%,0)`);
+    c.fillStyle=g;c.beginPath();c.arc(0,0,sz*3,0,TAU);c.fill();
+
+    // 十字
+    c.strokeStyle=`hsla(${this.hue},45%,93%,0.85)`;
+    c.lineWidth=0.4;
+    const arm=sz*5;
+    c.beginPath();c.moveTo(-arm,0);c.lineTo(arm,0);c.moveTo(0,-arm);c.lineTo(0,arm);c.stroke();
+
+    c.globalAlpha=1;c.restore();
+  }
+}
+
+// === 浮动光雾(Ambient Glow) ===
+class GlowOrb{
+  constructor(){this.reset()}
+  reset(){
+    this.x=R(30,W-30);
+    this.y=R(30,H-30);
+    this.r=R(30,80);
+    this.hue=R(240,300);
+    this.phase=R(0,TAU);
+    this.speed=R(0.008,0.03);
+    this.driftX=R(-0.15,0.15);
+    this.driftY=R(-0.15,0.15);
+    this.maxAlpha=R(0.02,0.06);
+  }
+  update(){
+    this.phase+=this.speed;
+    this.x+=this.driftX;
+    this.y+=this.driftY;
+    if(this.x<-50||this.x>W+50||this.y<-50||this.y>H+50)this.reset();
+  }
+  draw(){
+    const al=this.maxAlpha*(0.5+0.5*Math.sin(this.phase));
+    if(al<0.005)return;
+    const g=c.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r);
+    g.addColorStop(0,`hsla(${this.hue},60%,70%,${al})`);
+    g.addColorStop(1,'transparent');
+    c.beginPath();c.arc(this.x,this.y,this.r,0,TAU);
+    c.fillStyle=g;c.fill();
+  }
+}
+
+// === 边框流光粒子 ===
+class EdgeRunner{
+  constructor(){
+    this.t=R(0,1);
+    this.sp=R(0.001,0.004)*(Math.random()>0.5?1:-1);
+    this.sz=R(2,6);this.trail=[];
+    this.hue=R(25,50); // 金色
+  }
+  pos(t){
+    const m=35,w=W-m*2,h=H-m*2,per=2*(w+h);
+    const d=((t%1)+1)%1*per;
+    if(d<w)return{x:m+d,y:m};
+    if(d<w+h)return{x:m+w,y:m+d-w};
+    if(d<2*w+h)return{x:m+w-(d-w-h),y:m+h};
+    return{x:m,y:m+h-(d-2*w-h)};
+  }
+  update(){
+    this.t+=this.sp;
+    this.trail.unshift(this.pos(this.t));
+    if(this.trail.length>15)this.trail.pop();
+  }
+  draw(){
+    for(let i=0;i<this.trail.length;i++){
+      const p=this.trail[i];
+      const a=(1-i/this.trail.length)*0.65;
+      const s=this.sz*(1-i/this.trail.length*0.5);
+      const g=c.createRadialGradient(p.x,p.y,0,p.x,p.y,s);
+      g.addColorStop(0,`hsla(${this.hue},90%,75%,${a})`);
+      g.addColorStop(0.5,`hsla(${this.hue},85%,55%,${a*0.3})`);
+      g.addColorStop(1,'transparent');
+      c.beginPath();c.arc(p.x,p.y,s,0,TAU);c.fillStyle=g;c.fill();
+    }
+  }
+}
+
+// ==========================================
+//  创建所有路径和实例
+// ==========================================
+
+// 多种路径覆盖全卡
+const paths=[
+  // 中心区域环形
+  makeCirclePath(CX,CY*0.76,100,300),
+  makeCirclePath(CX,CY*0.76,70,300),
+  makeCirclePath(CX,CY*0.76,140,300),
+  // 大范围椭圆
+  makeDiamondPath(CX,CY,200,280,400),
+  // 卡牌内边框
+  makeRectPath(55,55,W-110,H-110,500),
+  // 水平波浪线
+  makeWavePath(H*0.65,15,3,60,W-60,200),
+  makeWavePath(H*0.3,20,2,80,W-80,200),
+  // S曲线
+  makeSCurve(CX-80,80,H-80,60,250),
+  makeSCurve(CX+80,80,H-80,-50,250),
+];
+
+// Saber光弧 - 分布在各路径上
+const beams=[
+  // 中心路径
+  new SaberBeam(paths[0],265,70,2.0,1.2,5),
+  new SaberBeam(paths[0],280,60,-1.8,1.0,4),
+  new SaberBeam(paths[1],255,75,1.5,0.9,4),
+  new SaberBeam(paths[1],290,55,-2.5,0.8,3.5),
+  new SaberBeam(paths[2],250,70,1.3,1.1,5),
+  new SaberBeam(paths[2],275,65,-1.6,1.0,4),
+  // 菱形路径
+  new SaberBeam(paths[3],260,65,1.8,1.3,5.5),
+  new SaberBeam(paths[3],285,60,-2.0,1.1,5),
+  // 矩形内边框
+  new SaberBeam(paths[4],270,55,2.2,1.0,4),
+  new SaberBeam(paths[4],255,60,-1.5,0.9,4),
+  // 波浪线
+  new SaberBeam(paths[5],260,70,1.8,0.8,3.5),
+  new SaberBeam(paths[6],275,65,-2.0,0.8,3.5),
+  // S曲线
+  new SaberBeam(paths[7],250,70,1.5,0.9,4),
+  new SaberBeam(paths[8],280,60,-1.8,0.9,4),
+];
+
+const sparks=Array.from({length:300},()=>new SparkParticle());
+const flares=Array.from({length:60},()=>new Flare());
+const orbs=Array.from({length:15},()=>new GlowOrb());
+const edges=Array.from({length:10},()=>new EdgeRunner());
+
+// === 粒子发射 ===
+let tick=0;
+function emitSparks(){
+  tick++;
+  if(tick%2)return;
+  for(const beam of beams){
+    if(Math.random()>0.35)continue;
+    const idx=Math.floor(beam.head)%beam.path.length;
+    const pt=beam.path[idx];
+    const s=sparks.find(s=>!s.alive);
+    if(s)s.emit(pt.x,pt.y,beam.hue);
+  }
+}
+
+// === 全局脉冲闪烁 ===
+let pulsePhase=0;
+function drawPulse(){
+  pulsePhase+=0.01;
+  // 周期性较强的闪烁
+  if(Math.random()<0.006){
+    const a=R(0.02,0.06);
+    const g=c.createRadialGradient(CX,CY,0,CX,CY,300);
+    g.addColorStop(0,`hsla(270,50%,85%,${a})`);
+    g.addColorStop(1,'transparent');
+    c.beginPath();c.arc(CX,CY,300,0,TAU);c.fillStyle=g;c.fill();
+  }
+}
+
+// ==========================================
+//  渲染循环
+// ==========================================
+function render(){
+  c.clearRect(0,0,W,H);
+
+  // screen 混合 - 光雾底层
+  c.globalCompositeOperation='screen';
+  orbs.forEach(o=>{o.update();o.draw()});
+
+  // lighter 混合 - 主要光效
+  c.globalCompositeOperation='lighter';
+
+  // Saber 光弧
+  beams.forEach(b=>{b.update();b.draw()});
+
+  // 飞散粒子
+  emitSparks();
+  sparks.forEach(s=>{s.update();s.draw()});
+
+  // 闪烁亮点
+  c.globalCompositeOperation='screen';
+  flares.forEach(f=>{f.update();f.draw()});
+
+  // 边框流光
+  edges.forEach(e=>{e.update();e.draw()});
+
+  // 全局闪烁
+  c.globalCompositeOperation='lighter';
+  drawPulse();
+
+  c.globalCompositeOperation='source-over';
+  requestAnimationFrame(render);
+}
+render();
+})();
+</script>
+</body>
+</html>

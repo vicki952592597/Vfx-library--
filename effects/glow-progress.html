@@ -1,0 +1,28 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>进度环发光</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#08080f;display:flex;align-items:center;justify-content:center;height:100vh;gap:60px;overflow:hidden;font-family:system-ui,sans-serif}
+.ring-wrap{position:relative;width:180px;height:180px}
+svg{width:180px;height:180px;transform:rotate(-90deg)}
+circle{fill:none;stroke-linecap:round}
+.track{stroke:rgba(255,255,255,0.05);stroke-width:8}
+.prog{stroke-width:8;stroke-dasharray:440;stroke-dashoffset:440;animation:fill-ring 3s ease-in-out infinite alternate}
+.r1 .prog{stroke:url(#g1);filter:drop-shadow(0 0 8px rgba(0,200,255,0.5))}
+.r2 .prog{stroke:url(#g2);filter:drop-shadow(0 0 8px rgba(160,100,255,0.5));animation-delay:0.5s}
+.r3 .prog{stroke:url(#g3);filter:drop-shadow(0 0 8px rgba(255,100,150,0.5));animation-delay:1s}
+@keyframes fill-ring{from{stroke-dashoffset:440}to{stroke-dashoffset:88}}
+.val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pct{font-size:32px;font-weight:700;color:#fff;animation:count 3s ease-in-out infinite alternate}
+.lbl{font-size:11px;color:rgba(255,255,255,0.35);margin-top:4px;letter-spacing:2px;text-transform:uppercase}
+.glow-bg{position:absolute;inset:-20px;border-radius:50%;opacity:0.15;filter:blur(25px);animation:pulse-glow 3s ease-in-out infinite alternate}
+.r1 .glow-bg{background:radial-gradient(circle,#00c8ff,transparent)}
+.r2 .glow-bg{background:radial-gradient(circle,#a064ff,transparent)}
+.r3 .glow-bg{background:radial-gradient(circle,#ff6496,transparent)}
+@keyframes pulse-glow{from{opacity:0.08;transform:scale(0.9)}to{opacity:0.25;transform:scale(1.1)}}
+@keyframes count{from{opacity:0.6}to{opacity:1}}
+</style></head><body>
+<div class="ring-wrap r1"><div class="glow-bg"></div><svg viewBox="0 0 160 160"><defs><linearGradient id="g1"><stop offset="0%" stop-color="#00c8ff"/><stop offset="100%" stop-color="#00ffa0"/></linearGradient></defs><circle class="track" cx="80" cy="80" r="70"/><circle class="prog" cx="80" cy="80" r="70"/></svg><div class="val"><div class="pct">80%</div><div class="lbl">CPU</div></div></div>
+<div class="ring-wrap r2"><div class="glow-bg"></div><svg viewBox="0 0 160 160"><defs><linearGradient id="g2"><stop offset="0%" stop-color="#a064ff"/><stop offset="100%" stop-color="#6040ff"/></linearGradient></defs><circle class="track" cx="80" cy="80" r="70"/><circle class="prog" cx="80" cy="80" r="70"/></svg><div class="val"><div class="pct">65%</div><div class="lbl">GPU</div></div></div>
+<div class="ring-wrap r3"><div class="glow-bg"></div><svg viewBox="0 0 160 160"><defs><linearGradient id="g3"><stop offset="0%" stop-color="#ff6496"/><stop offset="100%" stop-color="#ff9640"/></linearGradient></defs><circle class="track" cx="80" cy="80" r="70"/><circle class="prog" cx="80" cy="80" r="70"/></svg><div class="val"><div class="pct">92%</div><div class="lbl">MEM</div></div></div>
+</body></html>

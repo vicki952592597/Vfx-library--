@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSR卡牌 - Saber粒子特效</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        .card-container {
+            position: relative;
+            width: 600px;
+            height: 800px;
+        }
+        .card-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            position: absolute;
+            top: 0; left: 0;
+            z-index: 1;
+        }
+        #fx {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="card-container">
+        <img src="card.png" alt="SSR卡牌" />
+        <canvas id="fx"></canvas>
+    </div>
+<script>
+(() => {
+    const canvas = document.getElementById('fx');
+    const ctx = canvas.getContext('2d');
+    const box = document.querySelector('.card-container');
+
+    function resize() {
+        const r = box.getBoundingClientRect();
+        const d = window.devicePixelRatio || 1;
+        canvas.width = r.width * d;
+        canvas.height = r.height * d;
+        canvas.style.width = r.width + 'px';
+        canvas.style.height = r.height + 'px';
+        ctx.setTransform(d, 0, 0, d, 0, 0);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const W = 600, H = 800;
+    const cx = W * 0.5, cy = H * 0.38;
+
+    const rand = (a, b) => a + Math.random() * (b - a);
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+    // -------- 六瓣花路径 --------
+    function makePath(offset, rIn, rOut, petals, n) {
+        const pts = [];
+        for (let i = 0; i < n; i++) {
+            const t = i / n * Math.PI * 2 + offset;
+            const r = rIn + (rOut - rIn) * (0.5 + 0.5 * Math.cos(t * petals));
+            pts.push({ x: cx + Math.cos(t) * r, y: cy + Math.sin(t) * r });
+        }
+        return pts;
+    }
+
+    // -------- Saber 电弧 --------
+    class Arc {
+        constructor(path, hue, spd, w) {
+            this.p = path; this.hue = hue; this.spd = spd; this.w = w;
+            this.head = rand(0, path.length);
+            this.len = rand(12, 35);
+            this.np = rand(0, 99);
+            this.fp = rand(0, 6.28);
+        }
+        update() {
+            this.head = (this.head + this.spd + this.p.length) % this.p.length;
+            this.np += 0.15;
+            this.fp += 0.08;
+        }
+        draw() {
+            const n = this.p.length;
+            const fl = 0.6 + 0.4 * Math.sin(this.fp);
+            const seg = Math.floor(this.len);
+            ctx.save();
+            ctx.lineCap = 'round';
+            for (let L = 0; L < 3; L++) {
+                const lw = this.w * (3 - L) * 1.8;
+                const al = fl * [0.05, 0.12, 0.75][L];
+                const li = L === 2 ? 92 : 70;
+                ctx.beginPath();
+                for (let i = 0; i <= seg; i++) {
+                    const idx = Math.floor((this.head - i + n) % n);
+                    const pt = this.p[idx];
+                    const nz = L === 2 ? Math.sin(this.np + i * 0.7) * (2 + Math.random() * 2) : 0;
+                    const px = pt.x + nz * Math.cos(i);
+                    const py = pt.y + nz * Math.sin(i);
+                    i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+                }
+                ctx.strokeStyle = `hsla(${this.hue},70%,${li}%,${al})`;
+                ctx.lineWidth = lw;
+                if (L === 0) { ctx.shadowColor = `hsla(${this.hue},70%,70%,${al})`; ctx.shadowBlur = 25; }
+                else ctx.shadowBlur = 0;
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+    }
+
+    // -------- 飞散粒子 --------
+    class Fly {
+        constructor() { this.on = false; }
+        spawn(x, y, h) {
+            this.on = true; this.x = x; this.y = y;
+            const a = rand(0, 6.28), s = rand(0.4, 2.5);
+            this.vx = Math.cos(a) * s; this.vy = Math.sin(a) * s - rand(0.2, 0.8);
+            this.life = 1; this.dec = rand(0.008, 0.025);
+            this.sz = rand(0.6, 2.2); this.hue = h + rand(-20, 20);
+        }
+        update() {
+            if (!this.on) return;
+            this.x += this.vx; this.y += this.vy;
+            this.vy += 0.01; this.vx *= 0.995;
+            this.life -= this.dec;
+            if (this.life <= 0) this.on = false;
+        }
+        draw() {
+            if (!this.on) return;
+            const a = this.life, r = this.sz * a + 0.3;
+            const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, r * 4);
+            g.addColorStop(0, `hsla(${this.hue},60%,95%,${a * 0.9})`);
+            g.addColorStop(0.4, `hsla(${this.hue},80%,70%,${a * 0.3})`);
+            g.addColorStop(1, `hsla(${this.hue},80%,50%,0)`);
+            ctx.beginPath(); ctx.arc(this.x, this.y, r * 4, 0, 6.28);
+            ctx.fillStyle = g; ctx.fill();
+        }
+    }
+
+    // -------- 闪烁星点 --------
+    class Star {
+        constructor() { this.reset(); }
+        reset() {
+            const a = rand(0, 6.28), d = rand(5, 150);
+            this.x = cx + Math.cos(a) * d;
+            this.y = cy + Math.sin(a) * d * 0.75;
+            this.ph = rand(0, 6.28); this.spd = rand(0.03, 0.12);
+            this.ms = rand(1, 3.5); this.hue = rand(230, 310);
+            this.life = rand(80, 300); this.age = 0;
+        }
+        update() { this.ph += this.spd; this.age++; if (this.age > this.life) this.reset(); }
+        draw() {
+            const env = Math.sin(this.age / this.life * Math.PI);
+            const fl = 0.5 + 0.5 * Math.sin(this.ph);
+            const al = env * fl, sz = this.ms * fl;
+            if (al < 0.02) return;
+            ctx.save(); ctx.translate(this.x, this.y); ctx.globalAlpha = al;
+            const g = ctx.createRadialGradient(0, 0, 0, 0, 0, sz * 2.5);
+            g.addColorStop(0, `hsla(${this.hue},40%,97%,1)`);
+            g.addColorStop(0.35, `hsla(${this.hue},70%,75%,0.7)`);
+            g.addColorStop(1, `hsla(${this.hue},80%,50%,0)`);
+            ctx.fillStyle = g;
+            ctx.beginPath(); ctx.arc(0, 0, sz * 2.5, 0, 6.28); ctx.fill();
+            ctx.strokeStyle = `hsla(${this.hue},50%,92%,0.9)`;
+            ctx.lineWidth = 0.4;
+            const arm = sz * 4;
+            ctx.beginPath();
+            ctx.moveTo(-arm, 0); ctx.lineTo(arm, 0);
+            ctx.moveTo(0, -arm); ctx.lineTo(0, arm);
+            ctx.stroke();
+            const a2 = arm * 0.5;
+            ctx.beginPath();
+            ctx.moveTo(-a2, -a2); ctx.lineTo(a2, a2);
+            ctx.moveTo(a2, -a2); ctx.lineTo(-a2, a2);
+            ctx.stroke();
+            ctx.globalAlpha = 1; ctx.restore();
+        }
+    }
+
+    // -------- 边框金色流光 --------
+    class Border {
+        constructor() {
+            this.pr = rand(0, 1);
+            this.sp = rand(0.0015, 0.005) * (Math.random() > 0.5 ? 1 : -1);
+            this.sz = rand(3, 8);
+            this.trail = [];
+        }
+        pos(p) {
+            const m = 38, w = W - m * 2, h = H - m * 2, per = 2 * (w + h);
+            const d = ((p % 1) + 1) % 1 * per;
+            if (d < w) return { x: m + d, y: m };
+            if (d < w + h) return { x: m + w, y: m + d - w };
+            if (d < 2 * w + h) return { x: m + w - (d - w - h), y: m + h };
+            return { x: m, y: m + h - (d - 2 * w - h) };
+        }
+        update() {
+            this.pr += this.sp;
+            this.trail.unshift(this.pos(this.pr));
+            if (this.trail.length > 18) this.trail.pop();
+        }
+        draw() {
+            for (let i = 0; i < this.trail.length; i++) {
+                const t = this.trail[i];
+                const a = (1 - i / this.trail.length) * 0.7;
+                const s = this.sz * (1 - i / this.trail.length * 0.6);
+                const g = ctx.createRadialGradient(t.x, t.y, 0, t.x, t.y, s);
+                g.addColorStop(0, `hsla(40,95%,75%,${a})`);
+                g.addColorStop(0.5, `hsla(35,90%,55%,${a * 0.4})`);
+                g.addColorStop(1, `hsla(30,85%,40%,0)`);
+                ctx.beginPath(); ctx.arc(t.x, t.y, s, 0, 6.28);
+                ctx.fillStyle = g; ctx.fill();
+            }
+        }
+    }
+
+    // -------- 上升能量粒子 --------
+    class Wisp {
+        constructor() { this.reset(); }
+        reset() {
+            this.x = cx + rand(-180, 180);
+            this.y = H + rand(0, 100);
+            this.sz = rand(0.8, 2); this.sp = rand(0.5, 1.5);
+            this.wa = rand(1, 3); this.wf = rand(0.015, 0.05);
+            this.ph = rand(0, 6.28); this.hue = rand(240, 300); this.al = 0;
+        }
+        update() {
+            this.y -= this.sp; this.ph += this.wf;
+            this.x += Math.sin(this.ph) * this.wa;
+            this.x += (cx - this.x) * 0.003;
+            this.al = Math.sin(clamp(1 - this.y / H, 0, 1) * Math.PI) * 0.5;
+            if (this.y < cy - 60) this.reset();
+        }
+        draw() {
+            if (this.al < 0.01) return;
+            const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.sz * 5);
+            g.addColorStop(0, `hsla(${this.hue},70%,85%,${this.al})`);
+            g.addColorStop(1, `hsla(${this.hue},80%,50%,0)`);
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.sz * 5, 0, 6.28);
+            ctx.fillStyle = g; ctx.fill();
+        }
+    }
+
+    // -------- 辉光射线 --------
+    class Ray {
+        constructor() {
+            this.a = rand(0, 6.28); this.len = rand(60, 200);
+            this.w = rand(0.3, 1.2); this.ph = rand(0, 6.28);
+            this.ps = rand(0.015, 0.045); this.hue = rand(245, 295);
+            this.rs = rand(-0.0003, 0.0003);
+        }
+        update() { this.ph += this.ps; this.a += this.rs; }
+        draw() {
+            const int = 0.3 + 0.7 * Math.pow(0.5 + 0.5 * Math.sin(this.ph), 2);
+            const al = int * 0.18;
+            if (al < 0.01) return;
+            const x1 = cx + Math.cos(this.a) * 12, y1 = cy + Math.sin(this.a) * 12;
+            const x2 = cx + Math.cos(this.a) * this.len, y2 = cy + Math.sin(this.a) * this.len;
+            const g = ctx.createLinearGradient(x1, y1, x2, y2);
+            g.addColorStop(0, `hsla(${this.hue},60%,88%,${al})`);
+            g.addColorStop(0.25, `hsla(${this.hue},75%,65%,${al * 0.5})`);
+            g.addColorStop(1, 'transparent');
+            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+            ctx.strokeStyle = g; ctx.lineWidth = this.w * int + 0.2;
+            ctx.lineCap = 'round'; ctx.stroke();
+        }
+    }
+
+    // -------- 六芒星描边 --------
+    let hexRot = 0, coreP = 0;
+    function drawHex() {
+        hexRot += 0.002; coreP += 0.012;
+        const pu = 0.5 + 0.5 * Math.sin(coreP * 0.8);
+        const al = 0.06 + pu * 0.08;
+        ctx.save(); ctx.translate(cx, cy); ctx.rotate(hexRot);
+        star6(0, 0, 55 + pu * 10, 100 + pu * 15, al, 260);
+        ctx.rotate(-hexRot * 2);
+        star6(0, 0, 30 + pu * 5, 60 + pu * 8, al * 0.7, 280);
+        ctx.restore();
+    }
+    function star6(x, y, ri, ro, al, hue) {
+        ctx.beginPath();
+        for (let i = 0; i <= 12; i++) {
+            const a = i * Math.PI / 6 - Math.PI / 2;
+            const r = i % 2 === 0 ? ro : ri;
+            i === 0 ? ctx.moveTo(x + Math.cos(a) * r, y + Math.sin(a) * r)
+                     : ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = `hsla(${hue},60%,80%,${al})`;
+        ctx.lineWidth = 1.5;
+        ctx.shadowColor = `hsla(${hue},70%,70%,${al})`;
+        ctx.shadowBlur = 15; ctx.stroke(); ctx.shadowBlur = 0;
+    }
+
+    // -------- 中心光晕 --------
+    function drawCore() {
+        const p1 = 0.5 + 0.5 * Math.sin(coreP);
+        const p2 = 0.5 + 0.5 * Math.sin(coreP * 1.7 + 1);
+        let r = 80 + p1 * 50, a = 0.08 + p1 * 0.1;
+        let g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+        g.addColorStop(0, `hsla(270,50%,92%,${a})`);
+        g.addColorStop(0.3, `hsla(260,65%,70%,${a * 0.5})`);
+        g.addColorStop(0.7, `hsla(250,75%,45%,${a * 0.15})`);
+        g.addColorStop(1, 'transparent');
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, 6.28); ctx.fillStyle = g; ctx.fill();
+        r = 25 + p2 * 18; a = 0.15 + p2 * 0.2;
+        g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+        g.addColorStop(0, `hsla(275,40%,97%,${a})`);
+        g.addColorStop(0.5, `hsla(265,60%,80%,${a * 0.4})`);
+        g.addColorStop(1, 'transparent');
+        ctx.beginPath(); ctx.arc(cx, cy, r, 0, 6.28); ctx.fillStyle = g; ctx.fill();
+    }
+
+    // -------- 实例化 --------
+    const p1 = makePath(0, 30, 110, 6, 360);
+    const p2 = makePath(Math.PI / 6, 40, 95, 6, 360);
+    const p3 = makePath(0, 50, 130, 6, 360);
+
+    const arcs = [
+        new Arc(p1, 260, 1.8, 1.2), new Arc(p1, 275, -2.2, 1.0),
+        new Arc(p2, 250, 1.5, 1.1), new Arc(p2, 285, -1.7, 0.9),
+        new Arc(p3, 245, 2.0, 1.3), new Arc(p3, 270, -1.4, 1.0),
+        new Arc(p1, 280, 3.0, 0.7), new Arc(p2, 255, -2.8, 0.6),
+    ];
+    const flies = Array.from({ length: 200 }, () => new Fly());
+    const stars = Array.from({ length: 50 }, () => new Star());
+    const borders = Array.from({ length: 12 }, () => new Border());
+    const wisps = Array.from({ length: 30 }, () => new Wisp());
+    const rays = Array.from({ length: 20 }, () => new Ray());
+
+    let fc = 0;
+    function spawnFlies() {
+        fc++;
+        if (fc % 2) return;
+        for (const arc of arcs) {
+            if (Math.random() > 0.4) continue;
+            const idx = Math.floor(arc.head) % arc.p.length;
+            const pt = arc.p[idx];
+            const f = flies.find(f => !f.on);
+            if (f) f.spawn(pt.x, pt.y, arc.hue);
+        }
+    }
+
+    // -------- 主循环 --------
+    function loop() {
+        ctx.clearRect(0, 0, W, H);
+
+        ctx.globalCompositeOperation = 'screen';
+        drawCore();
+        rays.forEach(r => { r.update(); r.draw(); });
+        drawHex();
+
+        ctx.globalCompositeOperation = 'lighter';
+        arcs.forEach(a => { a.update(); a.draw(); });
+        spawnFlies();
+        flies.forEach(f => { f.update(); f.draw(); });
+        stars.forEach(s => { s.update(); s.draw(); });
+        wisps.forEach(w => { w.update(); w.draw(); });
+
+        ctx.globalCompositeOperation = 'screen';
+        borders.forEach(b => { b.update(); b.draw(); });
+
+        // 随机全屏闪烁
+        if (Math.random() < 0.008) {
+            ctx.globalCompositeOperation = 'lighter';
+            const a = rand(0.03, 0.08);
+            const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, 200);
+            g.addColorStop(0, `hsla(270,50%,90%,${a})`);
+            g.addColorStop(1, 'transparent');
+            ctx.beginPath(); ctx.arc(cx, cy, 200, 0, 6.28);
+            ctx.fillStyle = g; ctx.fill();
+        }
+
+        ctx.globalCompositeOperation = 'source-over';
+        requestAnimationFrame(loop);
+    }
+    loop();
+})();
+</script>
+</body>
+</html>

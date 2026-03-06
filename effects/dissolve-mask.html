@@ -1,0 +1,42 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>溶解消散遮罩</title><style>*{margin:0;padding:0}body{background:#0a0a12;overflow:hidden;display:flex;align-items:center;justify-content:center;height:100vh}
+canvas{border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.5)}</style></head><body>
+<canvas id="c" width="400" height="400"></canvas><script>
+var c=document.getElementById("c"),x=c.getContext("2d"),S=400,t=0;
+var noiseGrid=[];for(var i=0;i<S*S;i++)noiseGrid.push(Math.random());
+function draw(){
+t+=0.004;var threshold=(Math.sin(t*0.5)+1)*0.5;
+var edge=0.08;
+var id=x.createImageData(S,S);var d=id.data;
+for(var py=0;py<S;py++){for(var px=0;px<S;px++){
+var idx=(py*S+px)*4;
+var n=noiseGrid[py*S+px];
+var n2=Math.sin(px*0.02+t*2)*0.2+Math.cos(py*0.02+t*1.5)*0.2+0.5;
+var nv=(n*0.7+n2*0.3);
+if(nv<threshold-edge){
+d[idx]=20;d[idx+1]=25;d[idx+2]=50;d[idx+3]=255;
+}else if(nv<threshold){
+var p=(threshold-nv)/edge;
+var heat=Math.pow(p,0.5);
+d[idx]=255*heat;d[idx+1]=120*heat*(1-p*0.5);d[idx+2]=30*heat*(1-p);d[idx+3]=255;
+}else if(nv<threshold+edge*0.3){
+var glow=(threshold+edge*0.3-nv)/(edge*0.3);
+d[idx]=Math.min(255,100+155*glow);d[idx+1]=Math.min(255,160+95*glow);d[idx+2]=Math.min(255,220+35*glow);d[idx+3]=255;
+}else{
+var cx=px-S/2,cy=py-S/2;var dist=Math.sqrt(cx*cx+cy*cy)/S;
+var v=0.6-dist*0.3;
+d[idx]=v*100;d[idx+1]=v*140;d[idx+2]=v*200;d[idx+3]=255;
+}}}
+x.putImageData(id,0,0);
+x.globalCompositeOperation="lighter";
+for(var k=0;k<20;k++){
+var kx=Math.random()*S,ky=Math.random()*S;
+var kn=noiseGrid[((ky|0)*S+(kx|0))%noiseGrid.length];
+if(Math.abs(kn-threshold)<edge*0.5){
+var ka=Math.random()*0.4;
+var kr=Math.random()*3+1;
+x.fillStyle="rgba(255,200,80,"+ka+")";
+x.beginPath();x.arc(kx,ky,kr,0,6.28);x.fill()}}
+x.globalCompositeOperation="source-over";
+requestAnimationFrame(draw)}draw();
+</script></body></html>

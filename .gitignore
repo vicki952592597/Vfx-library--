@@ -1,0 +1,8 @@
+# 临时工具脚本（不需要上传）
+rewrite-script.py
+extract-effects.js
+
+# 系统文件
+Thumbs.db
+.DS_Store
+desktop.ini

@@ -1,0 +1,34 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>拖拽弹性跟随</title><style>*{margin:0;padding:0}body{background:#0a0a14;overflow:hidden;cursor:none}canvas{display:block}</style></head><body>
+<canvas id="c"></canvas><script>
+var c=document.getElementById("c"),x=c.getContext("2d"),W,H;
+function rs(){W=c.width=innerWidth;H=c.height=innerHeight}
+addEventListener("resize",rs);rs();
+var mx=W/2,my=H/2,N=30;
+var chain=[];for(var i=0;i<N;i++)chain.push({x:W/2,y:H/2});
+addEventListener("mousemove",function(e){mx=e.clientX;my=e.clientY});
+addEventListener("touchmove",function(e){e.preventDefault();mx=e.touches[0].clientX;my=e.touches[0].clientY},{passive:false});
+function draw(){
+x.fillStyle="rgba(10,10,20,0.15)";x.fillRect(0,0,W,H);
+chain[0].x+=(mx-chain[0].x)*0.25;chain[0].y+=(my-chain[0].y)*0.25;
+for(var i=1;i<N;i++){var p=chain[i],prev=chain[i-1];
+p.x+=(prev.x-p.x)*(0.35-i*0.005);p.y+=(prev.y-p.y)*(0.35-i*0.005)}
+x.globalCompositeOperation="lighter";
+for(var i=0;i<N;i++){var p=chain[i];
+var pct=1-i/N;var r=20*pct+3;
+var hue=280-i*6;
+var g=x.createRadialGradient(p.x,p.y,0,p.x,p.y,r);
+g.addColorStop(0,"hsla("+hue+",100%,70%,"+pct*0.6+")");
+g.addColorStop(0.5,"hsla("+hue+",80%,50%,"+pct*0.3+")");
+g.addColorStop(1,"transparent");
+x.beginPath();x.arc(p.x,p.y,r,0,6.28);x.fillStyle=g;x.fill();
+if(i>0){var prev=chain[i-1];
+x.beginPath();x.moveTo(prev.x,prev.y);x.lineTo(p.x,p.y);
+x.strokeStyle="hsla("+hue+",90%,60%,"+pct*0.3+")";
+x.lineWidth=pct*4;x.stroke()}}
+var cg=x.createRadialGradient(mx,my,0,mx,my,8);
+cg.addColorStop(0,"rgba(255,255,255,0.9)");cg.addColorStop(1,"transparent");
+x.fillStyle=cg;x.beginPath();x.arc(mx,my,8,0,6.28);x.fill();
+x.globalCompositeOperation="source-over";
+requestAnimationFrame(draw)}draw();
+</script></body></html>

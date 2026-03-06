@@ -1,0 +1,29 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>数据流粒子连线</title><style>*{margin:0;padding:0}body{background:#06080f;overflow:hidden}canvas{display:block}</style></head><body>
+<canvas id="c"></canvas><script>
+var c=document.getElementById("c"),x=c.getContext("2d"),W,H;
+function rs(){W=c.width=innerWidth;H=c.height=innerHeight;init()}
+var pts=[],mx=0,my=0,t=0;
+function init(){pts=[];for(var i=0;i<120;i++)pts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-0.5)*1.2,vy:(Math.random()-0.5)*1.2,r:Math.random()*2+1})}
+addEventListener("resize",rs);rs();
+addEventListener("mousemove",function(e){mx=e.clientX;my=e.clientY});
+function draw(){
+x.fillStyle="rgba(6,8,15,0.15)";x.fillRect(0,0,W,H);t+=0.01;
+for(var i=0;i<pts.length;i++){var p=pts[i];
+p.x+=p.vx;p.y+=p.vy;
+if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;
+var dm=Math.sqrt((p.x-mx)*(p.x-mx)+(p.y-my)*(p.y-my));
+if(dm<150){p.vx+=(mx-p.x)*0.0003;p.vy+=(my-p.y)*0.0003}
+x.beginPath();x.arc(p.x,p.y,p.r,0,6.28);
+x.fillStyle="rgba(100,160,255,0.7)";x.fill();
+for(var j=i+1;j<pts.length;j++){var q=pts[j];
+var d=Math.sqrt((p.x-q.x)*(p.x-q.x)+(p.y-q.y)*(p.y-q.y));
+if(d<130){var a=(1-d/130)*0.35;
+x.beginPath();x.moveTo(p.x,p.y);x.lineTo(q.x,q.y);
+x.strokeStyle="rgba(80,140,255,"+a+")";x.lineWidth=0.8;x.stroke()}}
+}
+var mg=x.createRadialGradient(mx,my,0,mx,my,120);
+mg.addColorStop(0,"rgba(100,160,255,0.08)");mg.addColorStop(1,"transparent");
+x.fillStyle=mg;x.fillRect(mx-120,my-120,240,240);
+requestAnimationFrame(draw)}draw();
+</script></body></html>

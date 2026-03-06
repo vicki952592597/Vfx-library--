@@ -1,0 +1,36 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>全息投影卡背</title><style>*{margin:0;padding:0;box-sizing:border-box}
+body{background:#050510;display:flex;align-items:center;justify-content:center;height:100vh;overflow:hidden}
+canvas{border-radius:16px;box-shadow:0 0 40px rgba(0,200,255,0.1),0 20px 60px rgba(0,0,0,0.5)}</style></head><body>
+<canvas id="c" width="280" height="400"></canvas><script>
+var c=document.getElementById("c"),x=c.getContext("2d"),W=280,H=400,t=0;
+function draw(){
+x.fillStyle="#080818";x.fillRect(0,0,W,H);t+=0.015;
+x.globalCompositeOperation="lighter";
+for(var i=0;i<30;i++){var y=((i*14+t*40)%H);
+x.fillStyle="rgba(0,220,255,"+(0.03+Math.sin(t+i*0.4)*0.02)+")";
+x.fillRect(0,y,W,1)}
+for(var r=0;r<5;r++){var cx=W/2,cy=H/2;var rad=40+r*35+Math.sin(t*0.8+r)*8;
+x.beginPath();x.arc(cx,cy,rad,0,6.28);
+x.strokeStyle="rgba(0,200,255,"+(0.08-r*0.012)+")";x.lineWidth=1;x.stroke()}
+var gx=W/2+Math.sin(t*0.6)*20,gy=H/2+Math.cos(t*0.4)*30;
+for(var k=0;k<3;k++){var hues=[180,200,280];var gr=x.createRadialGradient(gx,gy,0,gx,gy,120+k*20);
+gr.addColorStop(0,"hsla("+hues[k]+",100%,60%,0.06)");gr.addColorStop(1,"transparent");
+x.fillStyle=gr;x.fillRect(0,0,W,H)}
+x.save();x.translate(W/2,H/2);x.rotate(t*0.2);
+for(var s=0;s<6;s++){var a=s*1.047;var len=60+Math.sin(t*2+s)*10;
+x.beginPath();x.moveTo(0,0);x.lineTo(Math.cos(a)*len,Math.sin(a)*len);
+x.strokeStyle="rgba(0,255,200,0.1)";x.lineWidth=1.5;x.stroke()}
+x.restore();
+var triSize=30;x.save();x.translate(W/2,H/2);x.rotate(-t*0.3);
+x.beginPath();for(var v=0;v<3;v++){var angle=v*2.094-1.571;
+x.lineTo(Math.cos(angle)*triSize,Math.sin(angle)*triSize)}
+x.closePath();x.strokeStyle="rgba(0,255,220,0.2)";x.lineWidth=2;x.stroke();
+x.restore();
+for(var g=0;g<40;g++){var gx2=(g*7.3+t*15)%(W+20)-10;var gy2=(Math.sin(g*2.1+t)*0.5+0.5)*H;
+var ga=Math.sin(t*3+g)*0.5+0.5;
+x.fillStyle="rgba(100,255,220,"+ga*0.3+")";x.fillRect(gx2,gy2,2,2)}
+x.globalCompositeOperation="source-over";
+x.strokeStyle="rgba(0,200,255,0.12)";x.lineWidth=1.5;x.strokeRect(8,8,W-16,H-16);
+requestAnimationFrame(draw)}draw();
+</script></body></html>

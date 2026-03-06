@@ -1,0 +1,52 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>稀有度火焰边框</title><style>*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0608;display:flex;align-items:center;justify-content:center;height:100vh;overflow:hidden;font-family:system-ui,sans-serif}
+</style></head><body>
+<canvas id="c"></canvas><script>
+var c=document.getElementById("c"),x=c.getContext("2d"),W,H,t=0;
+function rs(){W=c.width=innerWidth;H=c.height=innerHeight}
+addEventListener("resize",rs);rs();
+var CW=260,CH=380;
+function draw(){
+x.fillStyle="rgba(10,6,8,0.15)";x.fillRect(0,0,W,H);t+=0.03;
+var ox=(W-CW)/2,oy=(H-CH)/2;
+x.save();
+x.fillStyle="#0c0810";
+x.beginPath();x.roundRect(ox+6,oy+6,CW-12,CH-12,12);x.fill();
+x.globalCompositeOperation="lighter";
+var sides=[
+{dir:"bottom",gen:function(i){return{x:ox+Math.random()*CW,y:oy+CH}}},
+{dir:"top",gen:function(i){return{x:ox+Math.random()*CW,y:oy}}},
+{dir:"left",gen:function(i){return{x:ox,y:oy+Math.random()*CH}}},
+{dir:"right",gen:function(i){return{x:ox+CW,y:oy+Math.random()*CH}}}];
+for(var s=0;s<120;s++){
+var side=s%4;var seed=s*137.5+t*2;
+var gen=sides[side].gen;var base=gen(s);
+var h,vx,vy;
+if(side===0){vy=-Math.random()*3-1;vx=(Math.random()-0.5)*0.8;h=Math.random()*40+20}
+else if(side===1){vy=Math.random()*3+1;vx=(Math.random()-0.5)*0.8;h=Math.random()*40+20}
+else if(side===2){vx=Math.random()*3+1;vy=(Math.random()-0.5)*0.8;h=Math.random()*40+20}
+else{vx=-Math.random()*3-1;vy=(Math.random()-0.5)*0.8;h=Math.random()*40+20}
+var progress=(seed%60)/60;
+var px=base.x+vx*progress*h+Math.sin(seed*0.3)*4;
+var py=base.y+vy*progress*h+Math.cos(seed*0.4)*4;
+var life=1-progress;
+var size=life*6+1;
+var hue=15+progress*25;
+var g=x.createRadialGradient(px,py,0,px,py,size);
+g.addColorStop(0,"hsla("+hue+",100%,70%,"+life*0.6+")");
+g.addColorStop(0.4,"hsla("+hue+",90%,50%,"+life*0.3+")");
+g.addColorStop(1,"transparent");
+x.fillStyle=g;x.beginPath();x.arc(px,py,size,0,6.28);x.fill()}
+var borderGlow=x.createLinearGradient(ox,oy,ox+CW,oy+CH);
+borderGlow.addColorStop(0,"rgba(255,100,30,0.15)");
+borderGlow.addColorStop(0.5,"rgba(255,200,50,0.1)");
+borderGlow.addColorStop(1,"rgba(255,80,20,0.15)");
+x.strokeStyle=borderGlow;x.lineWidth=2;
+x.beginPath();x.roundRect(ox,oy,CW,CH,16);x.stroke();
+x.globalCompositeOperation="source-over";
+x.fillStyle="rgba(255,200,100,0.6)";x.font="bold 14px system-ui";x.textAlign="center";
+x.fillText("✦ LEGENDARY ✦",W/2,oy+CH-24);
+x.restore();
+requestAnimationFrame(draw)}draw();
+</script></body></html>

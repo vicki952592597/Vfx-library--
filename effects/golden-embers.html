@@ -1,0 +1,29 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>金色余烬粒子</title><style>*{margin:0;padding:0}body{background:#0a0608;overflow:hidden}canvas{display:block}</style></head><body>
+<canvas id="c"></canvas><script>
+var c=document.getElementById("c"),x=c.getContext("2d"),W,H,t=0;
+function rs(){W=c.width=innerWidth;H=c.height=innerHeight}
+addEventListener("resize",rs);rs();
+var E=[];for(var i=0;i<50;i++)E.push({x:Math.random()*W,y:Math.random()*H,vy:-Math.random()*0.6-0.15,vx:(Math.random()-0.5)*0.2,s:Math.random()*2+0.5,life:Math.random(),decay:Math.random()*0.002+0.0008,hue:30+Math.random()*25,bright:0.5+Math.random()*0.5,phase:Math.random()*6.28});
+function draw(){
+x.fillStyle="rgba(10,6,8,0.06)";x.fillRect(0,0,W,H);t+=0.008;
+for(var i=0;i<E.length;i++){var e=E[i];
+e.x+=e.vx+Math.sin(t*1.2+e.phase)*0.15;e.y+=e.vy;e.life-=e.decay;
+if(e.life<=0){e.x=Math.random()*W;e.y=H+20;e.life=1;e.vy=-Math.random()*0.6-0.15}
+var a=e.life*e.bright;
+var g=x.createRadialGradient(e.x,e.y,0,e.x,e.y,e.s*3);
+g.addColorStop(0,"hsla("+e.hue+",100%,78%,"+a*0.9+")");
+g.addColorStop(0.4,"hsla("+e.hue+",85%,55%,"+a*0.4+")");
+g.addColorStop(1,"hsla("+e.hue+",80%,30%,0)");
+x.beginPath();x.arc(e.x,e.y,e.s*3,0,Math.PI*2);x.fillStyle=g;x.fill();
+x.beginPath();x.arc(e.x,e.y,e.s*0.4,0,Math.PI*2);
+x.fillStyle="hsla("+(e.hue-10)+",100%,92%,"+a*0.85+")";x.fill()}
+x.globalCompositeOperation="lighter";
+for(var j=0;j<2;j++){var gx=W*(0.3+j*0.4),gy=H*0.55;
+var gr=x.createRadialGradient(gx,gy,0,gx,gy,H*0.5);
+gr.addColorStop(0,"rgba(255,150,30,"+(0.01+Math.sin(t+j)*0.005)+")");
+gr.addColorStop(1,"transparent");
+x.fillStyle=gr;x.fillRect(0,0,W,H)}
+x.globalCompositeOperation="source-over";
+requestAnimationFrame(draw)}draw();
+</script></body></html>

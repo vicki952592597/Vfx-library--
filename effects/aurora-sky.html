@@ -1,0 +1,38 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>极光天幕</title><style>*{margin:0;padding:0}body{background:#020810;overflow:hidden}canvas{display:block}</style></head><body>
+<canvas id="c"></canvas><script>
+var c=document.getElementById("c"),x=c.getContext("2d"),W,H,t=0;
+function rs(){W=c.width=innerWidth;H=c.height=innerHeight}
+addEventListener("resize",rs);rs();
+function n(v){return(Math.sin(v)+Math.sin(v*2.3+1.3)+Math.sin(v*3.1+2.7))/3}
+function draw(){
+x.fillStyle="rgba(2,8,16,0.06)";x.fillRect(0,0,W,H);t+=0.003;
+var bands=[
+{hue:140,sat:80,y:0.25,amp:80,freq:0.003,speed:1.0,alpha:0.4},
+{hue:170,sat:70,y:0.30,amp:60,freq:0.004,speed:1.3,alpha:0.3},
+{hue:280,sat:60,y:0.35,amp:70,freq:0.0025,speed:0.8,alpha:0.25},
+{hue:200,sat:75,y:0.28,amp:50,freq:0.005,speed:1.6,alpha:0.2},
+{hue:120,sat:85,y:0.32,amp:90,freq:0.002,speed:0.6,alpha:0.35}
+];
+for(var b=0;b<bands.length;b++){
+var bd=bands[b];
+x.beginPath();x.moveTo(0,H);
+for(var px=0;px<=W;px+=2){
+var wave=n(px*bd.freq+t*bd.speed)*bd.amp+n(px*bd.freq*2.5+t*bd.speed*1.5)*bd.amp*0.3;
+var yy=H*bd.y+wave;
+x.lineTo(px,yy)}
+x.lineTo(W,H*0.7);x.lineTo(0,H*0.7);x.closePath();
+var gr=x.createLinearGradient(0,H*bd.y-bd.amp,0,H*0.7);
+gr.addColorStop(0,"hsla("+bd.hue+","+bd.sat+"%,65%,"+bd.alpha*0.8+")");
+gr.addColorStop(0.3,"hsla("+bd.hue+","+bd.sat+"%,50%,"+bd.alpha*0.4+")");
+gr.addColorStop(1,"transparent");
+x.fillStyle=gr;x.fill()}
+x.globalCompositeOperation="lighter";
+for(var s=0;s<80;s++){
+var sx=((s*137.5+t*20)%W);var sy=Math.random()*H*0.6;
+var sa=Math.random()*0.5+0.1;
+x.fillStyle="rgba(255,255,255,"+sa+")";
+x.fillRect(sx,sy,1,1)}
+x.globalCompositeOperation="source-over";
+requestAnimationFrame(draw)}draw();
+</script></body></html>

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSR卡牌粒子特效</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        .card-container {
+            position: relative;
+            width: 600px;
+            height: 800px;
+        }
+        .card-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        #particleCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+        /* 整体光晕脉冲 */
+        .glow-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 3;
+            pointer-events: none;
+            background: radial-gradient(ellipse at 50% 40%, rgba(180, 140, 255, 0.08) 0%, transparent 60%);
+            animation: glowPulse 3s ease-in-out infinite;
+        }
+        @keyframes glowPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="card-container">
+        <!-- 请将此处的src替换为你的卡牌图片路径 -->
+        <img id="cardImage" src="card.png" alt="SSR卡牌" />
+        <canvas id="particleCanvas"></canvas>
+        <div class="glow-overlay"></div>
+    </div>
+
+    <script>
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    const container = document.querySelector('.card-container');
+
+    let W, H;
+    function resize() {
+        const rect = container.getBoundingClientRect();
+        W = canvas.width = rect.width * window.devicePixelRatio;
+        H = canvas.height = rect.height * window.devicePixelRatio;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const cw = 600, ch = 800;
+    // 卡牌中心（发光星形中心位置，约在卡牌中上部）
+    const centerX = cw / 2;
+    const centerY = ch * 0.38;
+
+    // ========== 粒子系统 ==========
+
+    // 1. Saber光线粒子 - 沿射线路径流动
+    class SaberParticle {
+        constructor() { this.reset(); }
+        reset() {
+            this.angle = Math.random() * Math.PI * 2;
+            this.speed = 0.3 + Math.random() * 1.2;
+            this.dist = 10 + Math.random() * 30;
+            this.maxDist = 80 + Math.random() * 160;
+            this.life = 1;
+            this.decay = 0.003 + Math.random() * 0.008;
+            this.size = 1 + Math.random() * 2.5;
+            this.hue = 240 + Math.random() * 60; // 蓝紫色调
+            this.brightness = 70 + Math.random() * 30;
+            // 微小的角度偏移，让光线有曲线感
+            this.angleSpeed = (Math.random() - 0.5) * 0.005;
+            this.trail = [];
+        }
+        update() {
+            this.dist += this.speed;
+            this.angle += this.angleSpeed;
+            this.life -= this.decay;
+            const x = centerX + Math.cos(this.angle) * this.dist;
+            const y = centerY + Math.sin(this.angle) * this.dist;
+            this.trail.unshift({ x, y, life: this.life });
+            if (this.trail.length > 12) this.trail.pop();
+            if (this.life <= 0 || this.dist > this.maxDist) this.reset();
+        }
+        draw() {
+            if (this.trail.length < 2) return;
+            for (let i = 0; i < this.trail.length - 1; i++) {
+                const t = this.trail[i];
+                const alpha = t.life * (1 - i / this.trail.length) * 0.7;
+                const sz = this.size * (1 - i / this.trail.length);
+                ctx.beginPath();
+                ctx.arc(t.x, t.y, sz, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${this.hue}, 80%, ${this.brightness}%, ${alpha})`;
+                ctx.fill();
+            }
+        }
+    }
+
+    // 2. 闪烁星点 - 在中心区域随机闪烁
+    class SparkleParticle {
+        constructor() { this.reset(); }
+        reset() {
+            const angle = Math.random() * Math.PI * 2;
+            const dist = Math.random() * 140;
+            this.x = centerX + Math.cos(angle) * dist;
+            this.y = centerY + Math.sin(angle) * dist * 0.8;
+            this.size = 0.5 + Math.random() * 2;
+            this.maxSize = this.size;
+            this.life = 1;
+            this.decay = 0.005 + Math.random() * 0.015;
+            this.phase = Math.random() * Math.PI * 2;
+            this.twinkleSpeed = 0.05 + Math.random() * 0.1;
+            this.hue = 220 + Math.random() * 80;
+        }
+        update() {
+            this.life -= this.decay;
+            this.phase += this.twinkleSpeed;
+            if (this.life <= 0) this.reset();
+        }
+        draw() {
+            const flicker = 0.5 + 0.5 * Math.sin(this.phase);
+            const alpha = this.life * flicker;
+            const sz = this.maxSize * flicker;
+
+            // 十字星形
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.globalAlpha = alpha;
+
+            // 核心光点
+            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, sz * 3);
+            gradient.addColorStop(0, `hsla(${this.hue}, 60%, 95%, 1)`);
+            gradient.addColorStop(0.3, `hsla(${this.hue}, 80%, 70%, 0.6)`);
+            gradient.addColorStop(1, `hsla(${this.hue}, 80%, 50%, 0)`);
+            ctx.beginPath();
+            ctx.arc(0, 0, sz * 3, 0, Math.PI * 2);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            // 十字光芒
+            ctx.strokeStyle = `hsla(${this.hue}, 60%, 90%, ${alpha * 0.8})`;
+            ctx.lineWidth = 0.5;
+            const len = sz * 5;
+            ctx.beginPath();
+            ctx.moveTo(-len, 0); ctx.lineTo(len, 0);
+            ctx.moveTo(0, -len); ctx.lineTo(0, len);
+            ctx.stroke();
+
+            ctx.globalAlpha = 1;
+            ctx.restore();
+        }
+    }
+
+    // 3. 能量环粒子 - 围绕中心旋转
+    class OrbitalParticle {
+        constructor() { this.reset(); }
+        reset() {
+            this.angle = Math.random() * Math.PI * 2;
+            this.radiusX = 60 + Math.random() * 100;
+            this.radiusY = this.radiusX * (0.3 + Math.random() * 0.4);
+            this.speed = (0.005 + Math.random() * 0.015) * (Math.random() > 0.5 ? 1 : -1);
+            this.size = 0.8 + Math.random() * 1.5;
+            this.hue = 250 + Math.random() * 50;
+            this.tilt = Math.random() * Math.PI * 0.3;
+            this.life = 0.4 + Math.random() * 0.6;
+            this.trail = [];
+        }
+        update() {
+            this.angle += this.speed;
+            const x = centerX + Math.cos(this.angle) * this.radiusX;
+            const rawY = Math.sin(this.angle) * this.radiusY;
+            const y = centerY + rawY * Math.cos(this.tilt);
+            this.trail.unshift({ x, y });
+            if (this.trail.length > 20) this.trail.pop();
+        }
+        draw() {
+            if (this.trail.length < 2) return;
+            for (let i = 0; i < this.trail.length - 1; i++) {
+                const t = this.trail[i];
+                const alpha = this.life * (1 - i / this.trail.length) * 0.5;
+                const sz = this.size * (1 - i / this.trail.length * 0.5);
+                ctx.beginPath();
+                ctx.arc(t.x, t.y, sz, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${this.hue}, 70%, 75%, ${alpha})`;
+                ctx.fill();
+            }
+        }
+    }
+
+    // 4. 上升粒子 - 从底部缓缓上升，像能量汇聚
+    class RisingParticle {
+        constructor() { this.reset(); }
+        reset() {
+            this.x = centerX + (Math.random() - 0.5) * 300;
+            this.y = ch * 0.7 + Math.random() * (ch * 0.3);
+            this.targetY = centerY - 20 + Math.random() * 40;
+            this.speed = 0.3 + Math.random() * 0.8;
+            this.size = 0.5 + Math.random() * 1.5;
+            this.life = 1;
+            this.hue = 230 + Math.random() * 70;
+            this.wobbleAmp = 0.5 + Math.random() * 2;
+            this.wobbleSpeed = 0.02 + Math.random() * 0.05;
+            this.phase = Math.random() * Math.PI * 2;
+            this.alpha = 0;
+        }
+        update() {
+            this.y -= this.speed;
+            this.phase += this.wobbleSpeed;
+            this.x += Math.sin(this.phase) * this.wobbleAmp;
+            // 向中心X汇聚
+            this.x += (centerX - this.x) * 0.002;
+
+            const progress = 1 - (this.y - this.targetY) / (ch - this.targetY);
+            this.alpha = Math.sin(progress * Math.PI) * 0.6;
+
+            if (this.y < this.targetY) this.reset();
+        }
+        draw() {
+            const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 4);
+            gradient.addColorStop(0, `hsla(${this.hue}, 80%, 85%, ${this.alpha})`);
+            gradient.addColorStop(1, `hsla(${this.hue}, 80%, 60%, 0)`);
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size * 4, 0, Math.PI * 2);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+        }
+    }
+
+    // 5. 边缘光线 - 卡牌边缘的流光
+    class EdgeGlow {
+        constructor() { this.reset(); }
+        reset() {
+            // 沿着卡牌边缘移动(简化为矩形路径)
+            this.progress = Math.random();
+            this.speed = 0.001 + Math.random() * 0.003;
+            this.size = 2 + Math.random() * 4;
+            this.hue = 30 + Math.random() * 30; // 金色调，匹配边框
+            this.life = 0.3 + Math.random() * 0.7;
+            this.direction = Math.random() > 0.5 ? 1 : -1;
+        }
+        getPosition(p) {
+            // 矩形路径: 卡牌边缘（大致范围）
+            const margin = 42;
+            const w = cw - margin * 2;
+            const h = ch - margin * 2;
+            const perimeter = 2 * (w + h);
+            const d = (p % 1) * perimeter;
+
+            if (d < w) return { x: margin + d, y: margin };
+            if (d < w + h) return { x: margin + w, y: margin + (d - w) };
+            if (d < 2 * w + h) return { x: margin + w - (d - w - h), y: margin + h };
+            return { x: margin, y: margin + h - (d - 2 * w - h) };
+        }
+        update() {
+            this.progress += this.speed * this.direction;
+            if (this.progress > 1) this.progress -= 1;
+            if (this.progress < 0) this.progress += 1;
+        }
+        draw() {
+            const pos = this.getPosition(this.progress);
+            const gradient = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, this.size * 3);
+            gradient.addColorStop(0, `hsla(${this.hue}, 90%, 70%, ${this.life * 0.8})`);
+            gradient.addColorStop(0.5, `hsla(${this.hue}, 80%, 50%, ${this.life * 0.3})`);
+            gradient.addColorStop(1, `hsla(${this.hue}, 80%, 40%, 0)`);
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, this.size * 3, 0, Math.PI * 2);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+        }
+    }
+
+    // 6. 爆发光线 - 从中心射出的长光线
+    class BurstRay {
+        constructor() { this.reset(); }
+        reset() {
+            this.angle = Math.random() * Math.PI * 2;
+            this.length = 50 + Math.random() * 150;
+            this.width = 0.5 + Math.random() * 1.5;
+            this.life = 0;
+            this.maxLife = 1;
+            this.growSpeed = 0.008 + Math.random() * 0.015;
+            this.hue = 240 + Math.random() * 60;
+            this.phase = Math.random() * Math.PI * 2;
+            this.pulseSpeed = 0.02 + Math.random() * 0.04;
+        }
+        update() {
+            this.phase += this.pulseSpeed;
+            this.life = 0.15 + 0.15 * Math.sin(this.phase);
+        }
+        draw() {
+            const alpha = this.life * 0.3;
+            if (alpha <= 0) return;
+
+            const x1 = centerX + Math.cos(this.angle) * 15;
+            const y1 = centerY + Math.sin(this.angle) * 15;
+            const x2 = centerX + Math.cos(this.angle) * this.length;
+            const y2 = centerY + Math.sin(this.angle) * this.length;
+
+            const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
+            gradient.addColorStop(0, `hsla(${this.hue}, 70%, 80%, ${alpha})`);
+            gradient.addColorStop(0.3, `hsla(${this.hue}, 80%, 60%, ${alpha * 0.5})`);
+            gradient.addColorStop(1, `hsla(${this.hue}, 80%, 50%, 0)`);
+
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = this.width;
+            ctx.stroke();
+        }
+    }
+
+    // 7. 中心光晕呼吸效果
+    class CenterGlow {
+        constructor() {
+            this.phase = 0;
+            this.pulseSpeed = 0.015;
+        }
+        update() {
+            this.phase += this.pulseSpeed;
+        }
+        draw() {
+            const pulse = 0.5 + 0.5 * Math.sin(this.phase);
+            const radius = 60 + pulse * 40;
+            const alpha = 0.1 + pulse * 0.15;
+
+            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+            gradient.addColorStop(0, `hsla(270, 60%, 90%, ${alpha})`);
+            gradient.addColorStop(0.3, `hsla(260, 70%, 70%, ${alpha * 0.5})`);
+            gradient.addColorStop(0.6, `hsla(250, 80%, 50%, ${alpha * 0.2})`);
+            gradient.addColorStop(1, `hsla(240, 80%, 40%, 0)`);
+
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            // 第二层光晕
+            const r2 = 30 + pulse * 20;
+            const gradient2 = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, r2);
+            gradient2.addColorStop(0, `hsla(280, 50%, 95%, ${alpha * 1.5})`);
+            gradient2.addColorStop(1, `hsla(260, 60%, 70%, 0)`);
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, r2, 0, Math.PI * 2);
+            ctx.fillStyle = gradient2;
+            ctx.fill();
+        }
+    }
+
+    // ========== 初始化粒子 ==========
+    const saberParticles = Array.from({ length: 120 }, () => new SaberParticle());
+    const sparkles = Array.from({ length: 40 }, () => new SparkleParticle());
+    const orbitals = Array.from({ length: 30 }, () => new OrbitalParticle());
+    const risings = Array.from({ length: 25 }, () => new RisingParticle());
+    const edgeGlows = Array.from({ length: 15 }, () => new EdgeGlow());
+    const burstRays = Array.from({ length: 16 }, () => new BurstRay());
+    const centerGlow = new CenterGlow();
+
+    // ========== 动画循环 ==========
+    let time = 0;
+    function animate() {
+        const displayW = cw;
+        const displayH = ch;
+
+        ctx.clearRect(0, 0, displayW, displayH);
+
+        // 设置混合模式 - 加法混合让光效更亮
+        ctx.globalCompositeOperation = 'screen';
+
+        // 绘制中心光晕
+        centerGlow.update();
+        centerGlow.draw();
+
+        // 绘制爆发光线
+        burstRays.forEach(r => { r.update(); r.draw(); });
+
+        // 绘制轨道粒子
+        ctx.globalCompositeOperation = 'lighter';
+        orbitals.forEach(p => { p.update(); p.draw(); });
+
+        // 绘制Saber光线粒子
+        saberParticles.forEach(p => { p.update(); p.draw(); });
+
+        // 绘制闪烁星点
+        ctx.globalCompositeOperation = 'screen';
+        sparkles.forEach(p => { p.update(); p.draw(); });
+
+        // 绘制上升粒子
+        ctx.globalCompositeOperation = 'lighter';
+        risings.forEach(p => { p.update(); p.draw(); });
+
+        // 绘制边缘流光
+        ctx.globalCompositeOperation = 'screen';
+        edgeGlows.forEach(p => { p.update(); p.draw(); });
+
+        // 重置混合模式
+        ctx.globalCompositeOperation = 'source-over';
+
+        time++;
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+    </script>
+</body>
+</html>

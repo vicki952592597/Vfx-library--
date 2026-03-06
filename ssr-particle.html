@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSR粒子特效</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #000;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        canvas {
+            display: block;
+        }
+        #hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-family: 'Microsoft YaHei', sans-serif;
+            font-size: 14px;
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="hint">点击屏幕触发SSR特效</div>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let W, H, centerX, centerY;
+
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+            centerX = W / 2;
+            centerY = H / 2;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // ============== 工具函数 ==============
+        function rand(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+        function lerp(a, b, t) {
+            return a + (b - a) * t;
+        }
+        function easeOutCubic(t) {
+            return 1 - Math.pow(1 - t, 3);
+        }
+        function easeInOutQuad(t) {
+            return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        }
+        function easeOutExpo(t) {
+            return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+        }
+
+        // SSR 金色/彩色配色
+        const SSR_COLORS = [
+            { r: 255, g: 215, b: 0 },    // 金色
+            { r: 255, g: 180, b: 0 },    // 深金
+            { r: 255, g: 240, b: 100 },  // 亮金
+            { r: 255, g: 160, b: 50 },   // 橙金
+            { r: 255, g: 255, b: 200 },  // 白金
+            { r: 255, g: 200, b: 50 },   // 暖金
+        ];
+
+        const ACCENT_COLORS = [
+            { r: 255, g: 100, b: 50 },   // 橙红
+            { r: 200, g: 100, b: 255 },  // 紫色
+            { r: 100, g: 200, b: 255 },  // 蓝色
+        ];
+
+        function getSSRColor(alpha = 1) {
+            const c = SSR_COLORS[Math.floor(Math.random() * SSR_COLORS.length)];
+            return `rgba(${c.r},${c.g},${c.b},${alpha})`;
+        }
+
+        function getRandomColor() {
+            if (Math.random() < 0.8) {
+                return SSR_COLORS[Math.floor(Math.random() * SSR_COLORS.length)];
+            }
+            return ACCENT_COLORS[Math.floor(Math.random() * ACCENT_COLORS.length)];
+        }
+
+        // ============== 粒子系统 ==============
+
+        // --- 爆发粒子 ---
+        class BurstParticle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                const angle = rand(0, Math.PI * 2);
+                const speed = rand(2, 12);
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.life = 1;
+                this.decay = rand(0.005, 0.02);
+                this.size = rand(1, 4);
+                this.color = getRandomColor();
+                this.trail = [];
+                this.maxTrail = Math.floor(rand(5, 15));
+                this.gravity = rand(-0.02, 0.05);
+                this.friction = rand(0.97, 0.995);
+            }
+            update() {
+                this.trail.push({ x: this.x, y: this.y });
+                if (this.trail.length > this.maxTrail) this.trail.shift();
+                this.vx *= this.friction;
+                this.vy *= this.friction;
+                this.vy += this.gravity;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= this.decay;
+            }
+            draw() {
+                if (this.life <= 0) return;
+                const { r, g, b } = this.color;
+                // 拖尾
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = i / this.trail.length;
+                    const alpha = t * this.life * 0.5;
+                    const size = this.size * t;
+                    ctx.beginPath();
+                    ctx.arc(this.trail[i].x, this.trail[i].y, size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+                    ctx.fill();
+                }
+                // 主体
+                const alpha = this.life;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+                ctx.fill();
+                // 发光
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${r},${g},${b},${alpha * 0.3})`;
+                ctx.fill();
+            }
+        }
+
+        // --- 光线/Saber线条 ---
+        class SaberRay {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.angle = rand(0, Math.PI * 2);
+                this.length = rand(100, 500);
+                this.maxLength = this.length;
+                this.width = rand(1, 4);
+                this.life = 1;
+                this.decay = rand(0.008, 0.025);
+                this.color = getRandomColor();
+                this.speed = rand(5, 20);
+                this.currentLength = 0;
+                this.offset = rand(0, 100);
+                this.wave = rand(0.02, 0.08);
+                this.waveAmp = rand(5, 30);
+            }
+            update(time) {
+                this.currentLength = Math.min(this.currentLength + this.speed, this.maxLength);
+                this.life -= this.decay;
+            }
+            draw(time) {
+                if (this.life <= 0) return;
+                const { r, g, b } = this.color;
+                const alpha = this.life;
+
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+
+                // 绘制弯曲的光线
+                const segments = 30;
+                const segLen = this.currentLength / segments;
+
+                // 外发光
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                for (let i = 1; i <= segments; i++) {
+                    const sx = i * segLen;
+                    const sy = Math.sin((i * this.wave + this.offset) + time * 3) * this.waveAmp * (i / segments);
+                    ctx.lineTo(sx, sy);
+                }
+                ctx.strokeStyle = `rgba(${r},${g},${b},${alpha * 0.15})`;
+                ctx.lineWidth = this.width * 8;
+                ctx.stroke();
+
+                // 中间光
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                for (let i = 1; i <= segments; i++) {
+                    const sx = i * segLen;
+                    const sy = Math.sin((i * this.wave + this.offset) + time * 3) * this.waveAmp * (i / segments);
+                    ctx.lineTo(sx, sy);
+                }
+                ctx.strokeStyle = `rgba(${r},${g},${b},${alpha * 0.5})`;
+                ctx.lineWidth = this.width * 3;
+                ctx.stroke();
+
+                // 核心光
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                for (let i = 1; i <= segments; i++) {
+                    const sx = i * segLen;
+                    const sy = Math.sin((i * this.wave + this.offset) + time * 3) * this.waveAmp * (i / segments);
+                    ctx.lineTo(sx, sy);
+                }
+                ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.9})`;
+                ctx.lineWidth = this.width;
+                ctx.stroke();
+
+                ctx.restore();
+            }
+        }
+
+        // --- 环形脉冲 ---
+        class RingPulse {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.radius = 0;
+                this.maxRadius = rand(200, 500);
+                this.life = 1;
+                this.speed = rand(3, 8);
+                this.width = rand(2, 6);
+                this.color = getRandomColor();
+            }
+            update() {
+                this.radius += this.speed;
+                this.life = 1 - (this.radius / this.maxRadius);
+            }
+            draw() {
+                if (this.life <= 0) return;
+                const { r, g, b } = this.color;
+                const alpha = this.life;
+
+                // 外发光
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(${r},${g},${b},${alpha * 0.2})`;
+                ctx.lineWidth = this.width * 6;
+                ctx.stroke();
+
+                // 核心线
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(${r},${g},${b},${alpha * 0.8})`;
+                ctx.lineWidth = this.width;
+                ctx.stroke();
+
+                // 白色核心
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.5})`;
+                ctx.lineWidth = this.width * 0.5;
+                ctx.stroke();
+            }
+        }
+
+        // --- 螺旋粒子 ---
+        class SpiralParticle {
+            constructor(x, y) {
+                this.cx = x;
+                this.cy = y;
+                this.angle = rand(0, Math.PI * 2);
+                this.radius = rand(5, 30);
+                this.radiusSpeed = rand(1, 5);
+                this.angleSpeed = rand(0.05, 0.15) * (Math.random() < 0.5 ? 1 : -1);
+                this.life = 1;
+                this.decay = rand(0.005, 0.015);
+                this.size = rand(1, 3);
+                this.color = getRandomColor();
+            }
+            update() {
+                this.angle += this.angleSpeed;
+                this.radius += this.radiusSpeed;
+                this.x = this.cx + Math.cos(this.angle) * this.radius;
+                this.y = this.cy + Math.sin(this.angle) * this.radius;
+                this.life -= this.decay;
+            }
+            draw() {
+                if (this.life <= 0) return;
+                const { r, g, b } = this.color;
+                const alpha = this.life;
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${r},${g},${b},${alpha * 0.3})`;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,255,${alpha * 0.8})`;
+                ctx.fill();
+            }
+        }
+
+        // --- 浮动光点（背景） ---
+        class FloatingParticle {
+            constructor() {
+                this.x = rand(0, W);
+                this.y = rand(0, H);
+                this.vx = rand(-0.3, 0.3);
+                this.vy = rand(-0.5, -0.1);
+                this.size = rand(0.5, 2);
+                this.life = rand(0.3, 1);
+                this.color = SSR_COLORS[Math.floor(Math.random() * SSR_COLORS.length)];
+                this.pulse = rand(0, Math.PI * 2);
+                this.pulseSpeed = rand(0.02, 0.05);
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.pulse += this.pulseSpeed;
+                if (this.y < -10) this.y = H + 10;
+                if (this.x < -10) this.x = W + 10;
+                if (this.x > W + 10) this.x = -10;
+            }
+            draw() {
+                const { r, g, b } = this.color;
+                const alpha = this.life * (0.5 + 0.5 * Math.sin(this.pulse));
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${r},${g},${b},${alpha * 0.3})`;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+                ctx.fill();
+            }
+        }
+
+        // --- 闪光效果 ---
+        class FlashEffect {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.life = 1;
+                this.decay = 0.03;
+                this.maxRadius = rand(300, 600);
+            }
+            update() {
+                this.life -= this.decay;
+            }
+            draw() {
+                if (this.life <= 0) return;
+                const alpha = this.life * 0.6;
+                const radius = this.maxRadius * (1 - this.life * 0.5);
+                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, radius);
+                gradient.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+                gradient.addColorStop(0.3, `rgba(255, 220, 100, ${alpha * 0.5})`);
+                gradient.addColorStop(0.6, `rgba(255, 180, 0, ${alpha * 0.2})`);
+                gradient.addColorStop(1, `rgba(255, 150, 0, 0)`);
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, W, H);
+            }
+        }
+
+        // --- 六芒星 ---
+        class HexagramEffect {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.rotation = 0;
+                this.rotSpeed = rand(0.005, 0.02);
+                this.life = 1;
+                this.decay = 0.005;
+                this.maxSize = rand(100, 250);
+                this.currentSize = 0;
+                this.growSpeed = 3;
+                this.color = SSR_COLORS[0];
+            }
+            update() {
+                this.rotation += this.rotSpeed;
+                this.currentSize = Math.min(this.currentSize + this.growSpeed, this.maxSize);
+                this.life -= this.decay;
+            }
+            drawStar(cx, cy, size, rotation, points) {
+                ctx.beginPath();
+                for (let i = 0; i < points * 2; i++) {
+                    const r = i % 2 === 0 ? size : size * 0.4;
+                    const a = (i * Math.PI / points) + rotation;
+                    const x = cx + Math.cos(a) * r;
+                    const y = cy + Math.sin(a) * r;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+            }
+            draw() {
+                if (this.life <= 0) return;
+                const { r, g, b } = this.color;
+                const alpha = this.life * 0.6;
+
+                // 外发光
+                this.drawStar(this.x, this.y, this.currentSize * 1.1, this.rotation, 6);
+                ctx.strokeStyle = `rgba(${r},${g},${b},${alpha * 0.15})`;
+                ctx.lineWidth = 10;
+                ctx.stroke();
+
+                // 中光
+                this.drawStar(this.x, this.y, this.currentSize, this.rotation, 6);
+                ctx.strokeStyle = `rgba(${r},${g},${b},${alpha * 0.5})`;
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // 内光
+                this.drawStar(this.x, this.y, this.currentSize, this.rotation, 6);
+                ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.7})`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // 反向旋转的内六芒星
+                this.drawStar(this.x, this.y, this.currentSize * 0.6, -this.rotation * 1.5, 6);
+                ctx.strokeStyle = `rgba(${r},${g},${b},${alpha * 0.3})`;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // 中心圆
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.currentSize * 0.15, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.5})`;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+        }
+
+        // --- 上升光柱 ---
+        class LightPillar {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.width = rand(30, 80);
+                this.life = 1;
+                this.decay = rand(0.008, 0.015);
+                this.color = getRandomColor();
+                this.height = 0;
+                this.maxHeight = H;
+                this.growSpeed = rand(15, 30);
+            }
+            update() {
+                this.height = Math.min(this.height + this.growSpeed, this.maxHeight);
+                this.life -= this.decay;
+            }
+            draw() {
+                if (this.life <= 0) return;
+                const { r, g, b } = this.color;
+                const alpha = this.life;
+
+                const gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y - this.height);
+                gradient.addColorStop(0, `rgba(${r},${g},${b},${alpha * 0.6})`);
+                gradient.addColorStop(0.5, `rgba(${r},${g},${b},${alpha * 0.3})`);
+                gradient.addColorStop(1, `rgba(${r},${g},${b},0)`);
+
+                ctx.fillStyle = gradient;
+                ctx.fillRect(this.x - this.width / 2, this.y - this.height, this.width, this.height);
+
+                // 白色核心
+                const coreW = this.width * 0.3;
+                const gradient2 = ctx.createLinearGradient(this.x, this.y, this.x, this.y - this.height);
+                gradient2.addColorStop(0, `rgba(255,255,255,${alpha * 0.5})`);
+                gradient2.addColorStop(0.5, `rgba(255,255,255,${alpha * 0.2})`);
+                gradient2.addColorStop(1, `rgba(255,255,255,0)`);
+                ctx.fillStyle = gradient2;
+                ctx.fillRect(this.x - coreW / 2, this.y - this.height, coreW, this.height);
+            }
+        }
+
+        // --- 火花粒子 ---
+        class SparkParticle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                const angle = rand(0, Math.PI * 2);
+                const speed = rand(1, 8);
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed - rand(1, 3);
+                this.gravity = 0.08;
+                this.life = 1;
+                this.decay = rand(0.01, 0.03);
+                this.size = rand(0.5, 2);
+                this.color = getRandomColor();
+                this.sparkle = rand(0, Math.PI * 2);
+            }
+            update() {
+                this.x += this.vx;
+                this.vy += this.gravity;
+                this.y += this.vy;
+                this.vx *= 0.99;
+                this.life -= this.decay;
+                this.sparkle += 0.3;
+            }
+            draw() {
+                if (this.life <= 0) return;
+                const { r, g, b } = this.color;
+                const sparkAlpha = 0.5 + 0.5 * Math.sin(this.sparkle);
+                const alpha = this.life * sparkAlpha;
+
+                // 十字闪光
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.sparkle * 0.1);
+
+                const len = this.size * 4;
+                const gradient = ctx.createLinearGradient(-len, 0, len, 0);
+                gradient.addColorStop(0, `rgba(${r},${g},${b},0)`);
+                gradient.addColorStop(0.5, `rgba(255,255,255,${alpha})`);
+                gradient.addColorStop(1, `rgba(${r},${g},${b},0)`);
+                ctx.fillStyle = gradient;
+                ctx.fillRect(-len, -0.5, len * 2, 1);
+
+                const gradient2 = ctx.createLinearGradient(0, -len, 0, len);
+                gradient2.addColorStop(0, `rgba(${r},${g},${b},0)`);
+                gradient2.addColorStop(0.5, `rgba(255,255,255,${alpha})`);
+                gradient2.addColorStop(1, `rgba(${r},${g},${b},0)`);
+                ctx.fillStyle = gradient2;
+                ctx.fillRect(-0.5, -len, 1, len * 2);
+
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        // ============== 主控制 ==============
+        let burstParticles = [];
+        let saberRays = [];
+        let ringPulses = [];
+        let spiralParticles = [];
+        let floatingParticles = [];
+        let flashEffects = [];
+        let hexagrams = [];
+        let lightPillars = [];
+        let sparkParticles = [];
+        let time = 0;
+
+        // 初始化背景粒子
+        for (let i = 0; i < 60; i++) {
+            floatingParticles.push(new FloatingParticle());
+        }
+
+        // SSR特效触发
+        function triggerSSR(x, y) {
+            // 闪光
+            flashEffects.push(new FlashEffect(x, y));
+
+            // 光线爆发
+            const rayCount = Math.floor(rand(12, 25));
+            for (let i = 0; i < rayCount; i++) {
+                setTimeout(() => {
+                    saberRays.push(new SaberRay(x, y));
+                }, i * 30);
+            }
+
+            // 爆发粒子
+            for (let i = 0; i < 80; i++) {
+                burstParticles.push(new BurstParticle(x, y));
+            }
+
+            // 环形脉冲
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    ringPulses.push(new RingPulse(x, y));
+                }, i * 200);
+            }
+
+            // 螺旋粒子
+            for (let i = 0; i < 40; i++) {
+                spiralParticles.push(new SpiralParticle(x, y));
+            }
+
+            // 六芒星
+            hexagrams.push(new HexagramEffect(x, y));
+
+            // 光柱
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    lightPillars.push(new LightPillar(x + rand(-50, 50), y));
+                }, i * 150);
+            }
+
+            // 火花
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    sparkParticles.push(new SparkParticle(x, y));
+                }, rand(0, 500));
+            }
+
+            // 二次爆发
+            setTimeout(() => {
+                for (let i = 0; i < 40; i++) {
+                    burstParticles.push(new BurstParticle(x, y));
+                }
+                ringPulses.push(new RingPulse(x, y));
+                flashEffects.push(new FlashEffect(x, y));
+                for (let i = 0; i < 30; i++) {
+                    sparkParticles.push(new SparkParticle(x, y));
+                }
+            }, 500);
+
+            // 三次爆发
+            setTimeout(() => {
+                for (let i = 0; i < 30; i++) {
+                    burstParticles.push(new BurstParticle(x, y));
+                }
+                for (let i = 0; i < 5; i++) {
+                    saberRays.push(new SaberRay(x, y));
+                }
+                for (let i = 0; i < 20; i++) {
+                    sparkParticles.push(new SparkParticle(x, y));
+                }
+            }, 1000);
+        }
+
+        // 自动触发一次
+        setTimeout(() => triggerSSR(centerX, centerY), 500);
+
+        // 点击触发
+        canvas.addEventListener('click', (e) => {
+            triggerSSR(e.clientX, e.clientY);
+        });
+
+        // ============== 动画循环 ==============
+        function animate() {
+            time += 0.016;
+
+            // 半透明黑色叠加，产生拖影
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+            ctx.fillRect(0, 0, W, H);
+
+            ctx.globalCompositeOperation = 'lighter';
+
+            // 背景粒子
+            floatingParticles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            // 闪光
+            flashEffects = flashEffects.filter(f => f.life > 0);
+            flashEffects.forEach(f => {
+                f.update();
+                ctx.globalCompositeOperation = 'lighter';
+                f.draw();
+            });
+
+            // 光柱
+            lightPillars = lightPillars.filter(p => p.life > 0);
+            lightPillars.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            // 六芒星
+            hexagrams = hexagrams.filter(h => h.life > 0);
+            hexagrams.forEach(h => {
+                h.update();
+                h.draw();
+            });
+
+            // 环形脉冲
+            ringPulses = ringPulses.filter(r => r.life > 0);
+            ringPulses.forEach(r => {
+                r.update();
+                r.draw();
+            });
+
+            // Saber光线
+            saberRays = saberRays.filter(r => r.life > 0);
+            saberRays.forEach(r => {
+                r.update(time);
+                r.draw(time);
+            });
+
+            // 螺旋粒子
+            spiralParticles = spiralParticles.filter(p => p.life > 0);
+            spiralParticles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            // 爆发粒子
+            burstParticles = burstParticles.filter(p => p.life > 0);
+            burstParticles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            // 火花粒子
+            sparkParticles = sparkParticles.filter(p => p.life > 0);
+            sparkParticles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            ctx.globalCompositeOperation = 'source-over';
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
