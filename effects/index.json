@@ -3,6 +3,7 @@
   { "name": "极光天幕",         "cat": "环境与氛围", "file": "aurora-sky.html",          "icon": "🌌", "author": "FX Lab" },
   { "name": "星尘雾气",         "cat": "环境与氛围", "file": "stardust-fog.html",        "icon": "✨", "author": "FX Lab" },
   { "name": "体积光柱",         "cat": "环境与氛围", "file": "volumetric-light.html",    "icon": "💡", "author": "FX Lab" },
+  { "name": "星际穿越",         "cat": "环境与氛围", "file": "star-warp.html",           "icon": "🚀", "author": "FX Lab" },
   { "name": "按钮霓虹脉冲",     "cat": "UI与交互",   "file": "neon-pulse-btn.html",     "icon": "🔘", "author": "FX Lab" },
   { "name": "数据流粒子连线",   "cat": "UI与交互",   "file": "data-flow.html",          "icon": "🔗", "author": "FX Lab" },
   { "name": "拖拽弹性跟随",     "cat": "UI与交互",   "file": "elastic-drag.html",       "icon": "🎯", "author": "FX Lab" },

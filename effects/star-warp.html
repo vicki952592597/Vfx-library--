@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 星际穿越</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; overflow: hidden; font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        .header {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            text-align: center; z-index: 10; pointer-events: none; color: #fff;
+        }
+        .header h2 { font-size: 2.2em; font-weight: 700; margin-bottom: 8px;
+            text-shadow: 0 0 20px rgba(100,150,255,0.8), 0 0 40px rgba(100,150,255,0.4); }
+        .header p { font-size: 1.1em; opacity: 0.7; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>🚀 星际穿越</h2>
+        <p>光速前进 · 穿越星河</p>
+    </div>
+    <canvas id="warp"></canvas>
+    <script>
+        const canvas = document.getElementById('warp');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const stars = [];
+        const numStars = 800;
+        let speed = 2;
+        let targetSpeed = 2;
+
+        class Star {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = (Math.random() - 0.5) * canvas.width * 2;
+                this.y = (Math.random() - 0.5) * canvas.height * 2;
+                this.z = Math.random() * canvas.width;
+                this.pz = this.z;
+                this.hue = 200 + Math.random() * 60;
+            }
+        }
+
+        for (let i = 0; i < numStars; i++) stars.push(new Star());
+
+        // Speed control
+        canvas.addEventListener('mousedown', () => { targetSpeed = 30; });
+        canvas.addEventListener('mouseup', () => { targetSpeed = 2; });
+        canvas.addEventListener('touchstart', () => { targetSpeed = 30; });
+        canvas.addEventListener('touchend', () => { targetSpeed = 2; });
+
+        function animate() {
+            // Smooth speed transition
+            speed += (targetSpeed - speed) * 0.05;
+
+            // Motion blur fade
+            const fadeAlpha = speed > 10 ? 0.3 : 0.15;
+            ctx.fillStyle = `rgba(0, 0, 0, ${fadeAlpha})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            stars.forEach(star => {
+                star.pz = star.z;
+                star.z -= speed;
+
+                if (star.z <= 0) {
+                    star.reset();
+                    star.z = canvas.width;
+                    star.pz = star.z;
+                }
+
+                // Project to 2D
+                const sx = (star.x / star.z) * canvas.width * 0.5 + cx;
+                const sy = (star.y / star.z) * canvas.height * 0.5 + cy;
+                const px = (star.x / star.pz) * canvas.width * 0.5 + cx;
+                const py = (star.y / star.pz) * canvas.height * 0.5 + cy;
+
+                // Size based on depth
+                const size = Math.max(0, (1 - star.z / canvas.width) * 3);
+                const alpha = Math.min(1, (1 - star.z / canvas.width) * 1.5);
+
+                // Draw streak line
+                ctx.beginPath();
+                ctx.moveTo(px, py);
+                ctx.lineTo(sx, sy);
+
+                const lineLength = Math.sqrt((sx - px) ** 2 + (sy - py) ** 2);
+                const lineAlpha = Math.min(alpha, lineLength / 50);
+
+                ctx.strokeStyle = `hsla(${star.hue}, 70%, 80%, ${lineAlpha})`;
+                ctx.lineWidth = size;
+                ctx.stroke();
+
+                // Draw head dot
+                ctx.beginPath();
+                ctx.arc(sx, sy, size * 0.8, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${star.hue}, 60%, 90%, ${alpha})`;
+                ctx.fill();
+            });
+
+            // Center glow when fast
+            if (speed > 5) {
+                const glowAlpha = Math.min(0.15, (speed - 5) / 100);
+                const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, 200);
+                grd.addColorStop(0, `rgba(100, 150, 255, ${glowAlpha})`);
+                grd.addColorStop(1, 'transparent');
+                ctx.fillStyle = grd;
+                ctx.beginPath();
+                ctx.arc(cx, cy, 200, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        animate();
+    </script>
+</body>
+</html>
