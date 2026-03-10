@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>发射彩花</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@800&family=Great+Vibes&family=Montserrat:wght@200;400&family=Outfit:wght@400;800&display=swap">
+    <style>
+@property --ga {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@property --gb {
+  syntax: "<angle>";
+  initial-value: 180deg;
+  inherits: false;
+}
+:root {
+  --rainbow: oklch(72% 0.33 12), oklch(78% 0.3 55), oklch(88% 0.26 100),
+    oklch(80% 0.3 155), oklch(72% 0.33 210), oklch(68% 0.32 270),
+    oklch(74% 0.34 320), oklch(72% 0.33 12);
+  --spin-a: spinA 4s linear infinite;
+  --spin-b: spinB 4s linear infinite;
+  --radius: 9999px;
+  --glow-blur-tight: clamp(5px, 0.8vw, 20px);
+  --glow-blur-wide: clamp(12px, 2vw, 56px);
+  --glow-blur-bloom: clamp(24px, 4vw, 120px);
+  --glow-inset-tight: clamp(-2px, -0.3vw, -6px);
+  --glow-inset-mid: clamp(-1px, -0.2vw, -4px);
+  --glow-inset-bloom: clamp(-6px, -0.8vw, -20px);
+  --border-width: clamp(3px, 0.25vw, 7px);
+  --btn-padding: clamp(0.7em, 1.8vw, 1.4em) clamp(1.8em, 4vw, 3.8em);
+  --btn-font-size: clamp(1.1rem, 2.8vw, 4rem);
+  --btn-bg-dark-start: oklch(14% 0.015 260);
+  --btn-bg-dark-end: oklch(10% 0.012 260);
+  --body-bg: oklch(8% 0.01 260);
+}
+
+button::before, button, .btn-wrap::before, .btn-wrap::after, .btn-wrap .bloom {
+  border-radius: var(--radius);
+  corner-shape: squircle;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: grid;
+  min-height: 100vh;
+  overflow: hidden;
+  place-items: center;
+  background: var(--body-bg);
+  font-family: "Outfit", sans-serif;
+}
+body::before, body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+body::after {
+  inset: -10%;
+  z-index: 0;
+  background: radial-gradient(ellipse 50% 55% at 20% 90%, oklch(72% 0.33 210/0.6), transparent), radial-gradient(ellipse 45% 50% at 82% 88%, oklch(72% 0.33 12/0.55), transparent), radial-gradient(ellipse 38% 42% at 52% 96%, oklch(78% 0.3 55/0.35), transparent), radial-gradient(ellipse 30% 35% at 68% 80%, oklch(68% 0.32 270/0.28), transparent);
+  mask-image: linear-gradient(to bottom, transparent 52%, #060606 70%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 52%, #060606 70%);
+  filter: blur(48px) hue-rotate(0deg);
+  animation: blobSync 4s linear infinite, blobDrift 18s ease-in-out infinite alternate;
+}
+
+#particles {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.btn-wrap {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+}
+.btn-wrap::before, .btn-wrap::after, .btn-wrap .bloom {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  background: conic-gradient(from var(--ga), var(--rainbow));
+  transition: filter 0.2s ease, opacity 0.2s ease;
+}
+.btn-wrap::before {
+  inset: var(--glow-inset-tight);
+  filter: blur(var(--glow-blur-tight));
+  opacity: 0;
+  animation: var(--spin-a);
+  transition: all 0.2s ease;
+}
+.btn-wrap::after {
+  inset: var(--glow-inset-mid);
+  filter: blur(var(--glow-blur-wide));
+  opacity: 0;
+  animation: var(--spin-b);
+}
+.btn-wrap:hover::before {
+  filter: blur(clamp(4px, 0.6vw, 16px));
+  opacity: 1;
+}
+.btn-wrap:hover::after {
+  filter: blur(clamp(8px, 1.5vw, 44px));
+  opacity: 0.6;
+}
+.btn-wrap:hover .bloom {
+  opacity: 0.45;
+}
+.btn-wrap:hover .word {
+  text-shadow: 0 0 0.1em rgba(255, 255, 255, 0.5), 0 0 0.4em rgba(255, 255, 255, 0.2), 0 0 0.8em rgba(255, 255, 255, 0.1);
+}
+.btn-wrap:hover .symbol {
+  filter: brightness(1.4) saturate(1.4);
+}
+
+.bloom {
+  inset: var(--glow-inset-bloom);
+  filter: blur(var(--glow-blur-bloom));
+  opacity: 0.28;
+  animation: var(--spin-a);
+}
+
+button {
+  position: relative;
+  z-index: 1;
+  padding: var(--btn-padding);
+  border: var(--border-width) solid transparent;
+  outline: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  background: linear-gradient(var(--btn-bg-dark-start), var(--btn-bg-dark-end)) padding-box, conic-gradient(from var(--ga), var(--rainbow)) border-box;
+  color: white;
+  font-size: var(--btn-font-size);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  animation: var(--spin-a);
+  transform-origin: center;
+  transition: filter 0.2s ease, transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform;
+}
+button::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 1px;
+  inset-inline: 8%;
+  height: 38%;
+  background: linear-gradient(to bottom, oklch(100% 0 0/0.12), oklch(100% 0 0/0.02));
+  pointer-events: none;
+}
+button:hover {
+  filter: brightness(1.12);
+  transform: scale(1.045);
+}
+button:active {
+  filter: brightness(0.95);
+  transform: scale(0.95);
+  transition: filter 0.07s ease, transform 0.07s cubic-bezier(0.3, 0, 0.6, 1);
+}
+button .symbol {
+  display: inline-block;
+  margin-right: 0.15em;
+  background: conic-gradient(from var(--ga), var(--rainbow));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: var(--spin-a);
+}
+button .word {
+  font-weight: 800;
+  background: linear-gradient(145deg, oklch(100% 0.02 30), oklch(92% 0.03 40), oklch(100% 0.02 50), oklch(95% 0.01 60));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.2), 0 2px 2px rgba(255, 255, 255, 0.1), 0 4px 4px rgba(0, 0, 0, 0.3);
+  transition: text-shadow 0.4s ease;
+}
+
+@keyframes spinA {
+  to { --ga: 360deg; }
+}
+@keyframes spinB {
+  to { --gb: 540deg; }
+}
+@keyframes blobSync {
+  to { filter: blur(48px) hue-rotate(360deg); }
+}
+@keyframes blobDrift {
+  0%, 100% { transform: scale(1.15) translate(0%, 0%) rotate(0deg); }
+  20% { transform: scale(1.22) translate(-4%, -5%) rotate(-8deg); }
+  40% { transform: scale(1.28) translate(5%, -2%) rotate(6deg); }
+  60% { transform: scale(1.2) translate(3%, 6%) rotate(-4deg); }
+  80% { transform: scale(1.25) translate(-6%, 3%) rotate(7deg); }
+}
+    </style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+<div class="btn-wrap">
+  <div class="bloom"></div>
+  <button id="btn"><span class="symbol">✦</span><span class="word">发射</span></button>
+</div>
+
+<script>
+var _window$devicePixelRa;const CONFIG = {
+  burstCount: 107,
+  ambientInterval: 4,
+  spriteSize: 80,
+  shapeRadius: 15,
+  spriteCacheLimit: 255,
+  hueJitter: 40,
+  fadeRate: { min: 0.003, max: 0.007 },
+  burstSpeed: { min: 0.4, max: 1.2 },
+  ambientSpeed: 0.15,
+  burstSize: { min: 0.66, max: 1.0 },
+  ambientSize: { min: 0.33, max: 0.66 },
+  burstGravity: 0.012,
+  ambientGravity: 0.003 };
+
+const canvas = document.getElementById("particles");
+const ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
+const btn = document.querySelector("button");
+
+let particles = [];
+let frameCount = 0;
+let isHovered = false;
+let pxPerVw = 0;
+let btnPos = { x: 0, y: 0, w: 0 };
+let dpr = (_window$devicePixelRa = window.devicePixelRatio) !== null && _window$devicePixelRa !== void 0 ? _window$devicePixelRa : 1;
+
+const rand = (min, max) => min + Math.random() * (max - min);
+const vw = n => n * pxPerVw;
+
+const shapePathFns = {
+  circle: (ctx, cx, r) => ctx.arc(cx, cx, r, 0, Math.PI * 2),
+  square: (ctx, cx, r) => ctx.rect(cx - r, cx - r, r * 2, r * 2),
+  diamond: (ctx, cx, r) => {
+    ctx.moveTo(cx, cx - r);
+    ctx.lineTo(cx + r, cx);
+    ctx.lineTo(cx, cx + r);
+    ctx.lineTo(cx - r, cx);
+    ctx.closePath();
+  },
+  triangle: (ctx, cx, r) => {
+    ctx.moveTo(cx, cx - r);
+    ctx.lineTo(cx + r, cx + r);
+    ctx.lineTo(cx - r, cx + r);
+    ctx.closePath();
+  },
+  cross: (ctx, cx, r) => {
+    const [arm, len] = [r * 0.4, r * 1.2];
+    ctx.rect(cx - len / 2, cx - arm / 2, len, arm);
+    ctx.rect(cx - arm / 2, cx - len / 2, arm, len);
+  },
+  heart: (ctx, cx, r) => {
+    ctx.moveTo(cx, cx + r * 0.6);
+    ctx.bezierCurveTo(cx + r, cx - r * 0.4, cx + r * 1.5, cx - r * 1.1, cx, cx - r * 1.5);
+    ctx.bezierCurveTo(cx - r * 1.5, cx - r * 1.1, cx - r, cx - r * 0.4, cx, cx + r * 0.6);
+    ctx.closePath();
+  } };
+
+const SHAPES = Object.keys(shapePathFns);
+const pickShape = () => SHAPES[Math.floor(Math.random() * SHAPES.length)];
+
+const spriteCache = new Map();
+
+const buildSprite = (shape, hue) => {var _shapePathFns$shape;
+  const { spriteSize, shapeRadius } = CONFIG;
+  const offscreen = Object.assign(document.createElement("canvas"), {
+    width: spriteSize, height: spriteSize });
+  const octx = offscreen.getContext("2d");
+  const color = `oklch(${rand(72, 90)}% 0.30 ${hue}deg)`;
+  const center = spriteSize / 2;
+  Object.assign(octx, { fillStyle: color, shadowBlur: 12, shadowColor: color });
+  octx.beginPath();
+  ((_shapePathFns$shape = shapePathFns[shape]) !== null && _shapePathFns$shape !== void 0 ? _shapePathFns$shape : shapePathFns.circle)(octx, center, shapeRadius);
+  octx.fill();
+  return offscreen;
+};
+
+const getSprite = (shape, hue) => {
+  const { spriteCacheLimit } = CONFIG;
+  const snappedHue = Math.round(hue / 10) * 10;
+  const key = `${shape}_${snappedHue}`;
+  const cached = spriteCache.get(key);
+  if (cached) {
+    spriteCache.delete(key);
+    spriteCache.set(key, cached);
+    return cached;
+  }
+  const sprite = buildSprite(shape, snappedHue);
+  spriteCache.set(key, sprite);
+  if (spriteCache.size > spriteCacheLimit) {
+    spriteCache.delete(spriteCache.keys().next().value);
+  }
+  return sprite;
+};
+
+const syncLayout = () => {var _window$devicePixelRa2;
+  dpr = (_window$devicePixelRa2 = window.devicePixelRatio) !== null && _window$devicePixelRa2 !== void 0 ? _window$devicePixelRa2 : 1;
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  canvas.style.width = `${window.innerWidth}px`;
+  canvas.style.height = `${window.innerHeight}px`;
+  ctx.scale(dpr, dpr);
+  pxPerVw = window.innerWidth / 100;
+  const { left, top, width, height } = btn.getBoundingClientRect();
+  btnPos = { x: left + width / 2, y: top + height / 2, w: width };
+};
+
+const gradientAngle = () => performance.now() % 4000 / 4000 * 360;
+
+const hueAt = (clientX, clientY) => {
+  const angle = Math.atan2(clientY - btnPos.y, clientX - btnPos.x) * 180 / Math.PI;
+  return (angle + 90 - gradientAngle() + 720) % 360;
+};
+
+const randomEdgeOrigin = () => {
+  const angle = rand(0, Math.PI * 2);
+  const r = btnPos.w * 0.5 * rand(0.85, 1.05);
+  const hue = (angle * 180 / Math.PI + 90 - gradientAngle() + 720) % 360;
+  return { x: btnPos.x + Math.cos(angle) * r, y: btnPos.y + Math.sin(angle) * r * 0.4, hue };
+};
+
+const spawnParticle = (x, y, isBurst = false, baseHue = null) => {
+  const { hueJitter, burstSpeed, ambientSpeed, burstSize, ambientSize, burstGravity, ambientGravity, fadeRate } = CONFIG;
+  const hue = baseHue !== null ? baseHue + rand(-hueJitter, hueJitter) : rand(0, 360);
+  const angle = rand(0, Math.PI * 2);
+  const speed = isBurst ? rand(burstSpeed.min, burstSpeed.max) : ambientSpeed;
+  const { min, max } = isBurst ? burstSize : ambientSize;
+  return {
+    x, y,
+    sprite: getSprite(pickShape(), hue),
+    isBurst,
+    fade: rand(fadeRate.min, fadeRate.max),
+    vx: isBurst ? Math.cos(angle) * vw(speed) : vw(rand(-speed, speed)),
+    vy: isBurst ? Math.sin(angle) * vw(speed) : vw(rand(-speed, -speed)),
+    size: vw(rand(min, max)),
+    life: isBurst ? 1 : rand(0.6, 1),
+    gravity: vw(isBurst ? burstGravity : ambientGravity) };
+};
+
+const stepParticle = p => {
+  p.x += p.vx;
+  p.y += p.vy;
+  p.vy += p.gravity;
+  p.life -= p.fade;
+};
+
+const drawParticle = ({ x, y, size, sprite, life }) => {
+  const { spriteSize, shapeRadius } = CONFIG;
+  const drawSize = spriteSize * (size / shapeRadius);
+  ctx.globalAlpha = Math.max(0, life);
+  ctx.drawImage(sprite, x - drawSize / 2, y - drawSize / 2, drawSize, drawSize);
+};
+
+const burst = (x, y, hue) => {
+  const { burstCount } = CONFIG;
+  particles.push(...Array.from({ length: burstCount }, () => spawnParticle(x, y, true, hue)));
+};
+
+const tick = () => {
+  const { ambientInterval } = CONFIG;
+  ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+  const burstActive = particles.some(p => p.isBurst && p.life > 0);
+  if (isHovered && !burstActive && ++frameCount % ambientInterval === 0) {
+    const { x, y, hue } = randomEdgeOrigin();
+    particles.push(spawnParticle(x, y, false, hue));
+  }
+  let i = 0;
+  while (i < particles.length) {
+    const p = particles[i];
+    stepParticle(p);
+    p.life > 0 ? (drawParticle(p), i++) : (particles[i] = particles.at(-1), particles.pop());
+  }
+  requestAnimationFrame(tick);
+};
+
+["resize", "scroll"].forEach(e => window.addEventListener(e, syncLayout));
+btn.addEventListener("mouseenter", () => isHovered = true);
+btn.addEventListener("mouseleave", () => isHovered = false);
+btn.addEventListener("click", ({ clientX, clientY }) => burst(clientX, clientY, hueAt(clientX, clientY)));
+btn.addEventListener("touchstart", ({ touches: [{ clientX, clientY }] }) => burst(clientX, clientY, hueAt(clientX, clientY)));
+
+syncLayout();
+requestAnimationFrame(tick);
+</script>
+
+</body>
+</html>
