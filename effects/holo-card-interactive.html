@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>全息卡牌交互特效</title>
+<style>
+/* ========== 基础重置 ========== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+  background: #0a0a0a;
+  -webkit-tap-highlight-color: transparent;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ========== 卡牌舞台 ========== */
+.card-stage {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  perspective: var(--perspective, 1000px);
+  -webkit-perspective: var(--perspective, 1000px);
+  min-width: 100px; min-height: 100px;
+}
+
+/* ========== 卡牌主体 ========== */
+.holo-card {
+  position: relative;
+  width: var(--card-w, 480px); height: var(--card-h, 672px);
+  border-radius: 20px;
+  transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
+  transform: rotateX(0deg) rotateY(0deg) scale(1);
+  transition: transform var(--t-speed, 0.45s) cubic-bezier(0.22,1,0.36,1),
+              box-shadow var(--t-speed, 0.45s) ease,
+              opacity 0.4s ease;
+  will-change: transform, opacity;
+  cursor: pointer;
+  opacity: 0; pointer-events: none;
+}
+
+.holo-card__content {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  border-radius: inherit; overflow: hidden;
+  filter: drop-shadow(0 8px 24px rgba(0,0,0,0.5));
+}
+
+.holo-card.visible { opacity: 1; pointer-events: auto; }
+.holo-card.active { transition: transform 0.06s linear, filter 0.2s ease; }
+
+.holo-card__img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; pointer-events: none; user-select: none;
+  -webkit-user-select: none; border-radius: inherit; z-index: 1;
+}
+
+/* ========== 全息彩虹层 ========== */
+.holo-card__holo {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  opacity: 0; mix-blend-mode: color-dodge; transition: opacity 0.3s ease;
+  background:
+    repeating-linear-gradient(0deg,
+      rgba(255,90,90,0.18) 0%, rgba(255,220,60,0.16) 7%, rgba(100,255,80,0.16) 14%,
+      rgba(80,255,240,0.18) 21%, rgba(90,120,255,0.18) 28%, rgba(200,80,255,0.16) 35%,
+      rgba(255,90,90,0.18) 42%),
+    repeating-linear-gradient(133deg,
+      rgba(0,0,0,0) 0%, rgba(255,100,100,0.12) 3%, rgba(255,230,70,0.12) 6%,
+      rgba(120,255,100,0.12) 9%, rgba(100,255,240,0.12) 12%, rgba(100,130,255,0.12) 15%,
+      rgba(210,100,255,0.12) 18%, rgba(0,0,0,0) 21%);
+  background-size: var(--bg-x,100%) var(--bg-y,100%);
+  background-position: var(--bg-pos-x,50%) var(--bg-pos-y,50%);
+  filter: brightness(1) contrast(1.5);
+}
+.holo-card.active .holo-card__holo { opacity: var(--holo-intensity, 0.6); }
+
+/* ========== 高光层 ========== */
+.holo-card__glare {
+  position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  opacity: 0; mix-blend-mode: overlay; transition: opacity 0.3s ease;
+  background: radial-gradient(
+    circle farthest-corner at var(--glare-x,50%) var(--glare-y,50%),
+    rgba(255,255,255,0.85) 5%, rgba(255,255,255,0.55) 18%,
+    rgba(255,255,255,0.15) 40%, rgba(0,0,0,0.45) 90%);
+}
+.holo-card.active .holo-card__glare { opacity: var(--glare-intensity, 0.35); }
+
+/* ========== 闪光粒子层 ========== */
+.holo-card__sparkle {
+  position: absolute; inset: 0; z-index: 4; pointer-events: none;
+  overflow: hidden; opacity: 0; mix-blend-mode: color-dodge; transition: opacity 0.3s ease;
+}
+.holo-card.active .holo-card__sparkle { opacity: 1; }
+
+.sparkle-dot {
+  position: absolute;
+  width: var(--dot-size, 3px); height: var(--dot-size, 3px);
+  border-radius: 50%; background: white; opacity: 0;
+  animation: sparkle-blink var(--blink-dur, 2s) ease-in-out var(--blink-delay, 0s) infinite;
+}
+@keyframes sparkle-blink {
+  0%, 100% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: var(--dot-opacity, 0.8); transform: scale(1.2); }
+}
+
+/* ========== 卡牌边框高光 ========== */
+.holo-card__edge {
+  position: absolute; inset: -1px; z-index: 0; pointer-events: none;
+  opacity: 0; transition: opacity 0.3s ease;
+  background: linear-gradient(var(--edge-angle, 130deg),
+    transparent 20%, rgba(255,220,150,0.35) 40%, rgba(255,255,255,0.5) 50%,
+    rgba(150,220,255,0.35) 60%, transparent 80%);
+}
+.holo-card.active .holo-card__edge { opacity: 0.6; }
+
+/* ========== 旋转边框光效 ========== */
+.holo-card__glow-spinner {
+  position: absolute; top: 50%; left: 50%; width: 200%; height: 200%;
+  transform: translate(-50%, -50%);
+  background: conic-gradient(from 0deg,
+    transparent 0%, #ff3868 8%, #ff7eb3 14%, #ffba56 20%, #ffe066 26%,
+    #7aff8b 32%, #56d6ff 38%, #7b68ee 44%, #c850c0 50%, transparent 56%, transparent 100%);
+  animation: border-glow-spin 3s linear infinite;
+}
+@keyframes border-glow-spin {
+  0%   { transform: translate(-50%,-50%) rotate(0deg); }
+  100% { transform: translate(-50%,-50%) rotate(360deg); }
+}
+
+.holo-card__border-glow {
+  position: absolute; inset: -4px; z-index: 0; pointer-events: none;
+  overflow: hidden; opacity: 0.9; border-radius: inherit; transition: opacity 0.4s ease;
+}
+.holo-card__glow-inner {
+  position: absolute; inset: 4px; background: #000;
+  border-radius: inherit; z-index: 1;
+}
+.holo-card.active .holo-card__border-glow { opacity: 1; }
+
+.holo-card__border-glow-blur {
+  position: absolute; inset: -12px; z-index: -1; pointer-events: none;
+  opacity: 0.45; transition: opacity 0.4s ease; overflow: hidden;
+  border-radius: inherit; filter: blur(16px);
+}
+.holo-card.active .holo-card__border-glow-blur { opacity: 0.7; }
+
+/* ========== 阴影增强 ========== */
+.holo-card.active {
+  filter: drop-shadow(0 18px 40px rgba(0,0,0,0.55))
+          drop-shadow(0 0 20px rgba(255,200,100,0.08));
+}
+</style>
+</head>
+<body>
+
+<div class="card-stage" id="cardStage"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ── 配置 ── */
+  var MASK_SRC       = 'assets/holo-mask.png';
+  var CARD_IMAGE     = 'assets/holo-card1.png';
+  var CARD_ALT       = '全息卡牌交互特效';
+  var PERSPECTIVE    = 1000;
+  var MAX_TILT       = 20;
+  var HOLO_INTENSITY = 0.6;
+  var GLARE_INTENSITY= 0.35;
+  var SPARKLE_COUNT  = 60;
+  var TILT_SPEED     = 0.45;
+
+  /* ── DOM ── */
+  var stage = document.getElementById('cardStage');
+
+  /* ── 运行时变量 ── */
+  var CARD_W = 480, CARD_H = 672;
+  var maskUrl = '';
+
+  function log(msg) { if (window.console) console.log('[HoloCard]', msg); }
+
+  /* ── 启动 ── */
+  function boot() {
+    if (!stage) return;
+
+    if (!MASK_SRC) { init(); return; }
+
+    var maskImg = new Image();
+    maskImg.onload = function () {
+      CARD_W = maskImg.naturalWidth;
+      CARD_H = maskImg.naturalHeight;
+      maskUrl = 'url("' + MASK_SRC + '")';
+      log('遮罩加载成功：' + CARD_W + 'x' + CARD_H);
+      init();
+    };
+    maskImg.onerror = function () {
+      log('遮罩图加载失败，使用默认尺寸');
+      maskUrl = '';
+      init();
+    };
+    maskImg.src = MASK_SRC;
+  }
+
+  /* ── 初始化 ── */
+  function init() {
+    var maxW = window.innerWidth * 0.85;
+    var maxH = window.innerHeight * 0.85;
+    var scale = Math.min(maxW / CARD_W, maxH / CARD_H, 1);
+    var displayW = Math.round(CARD_W * scale);
+    var displayH = Math.round(CARD_H * scale);
+
+    CARD_W = displayW;
+    CARD_H = displayH;
+
+    stage.style.setProperty('--perspective', PERSPECTIVE + 'px');
+    stage.style.width = CARD_W + 'px';
+    stage.style.height = CARD_H + 'px';
+
+    var el = createCardElement();
+    stage.appendChild(el);
+    void el.offsetWidth;
+    el.classList.add('visible');
+    attachInteraction(el);
+  }
+
+  /* ── 创建卡牌 DOM ── */
+  function createCardElement() {
+    var card = document.createElement('div');
+    card.className = 'holo-card';
+    card.style.setProperty('--card-w', CARD_W + 'px');
+    card.style.setProperty('--card-h', CARD_H + 'px');
+    card.style.setProperty('--t-speed', TILT_SPEED + 's');
+    card.style.setProperty('--holo-intensity', HOLO_INTENSITY);
+    card.style.setProperty('--glare-intensity', GLARE_INTENSITY);
+    card.style.left = '0'; card.style.top = '0';
+    card.style.width = CARD_W + 'px'; card.style.height = CARD_H + 'px';
+
+    if (maskUrl) card.style.setProperty('--mask-url', maskUrl);
+
+    // 外发光模糊层
+    var borderGlowBlur = document.createElement('div');
+    borderGlowBlur.className = 'holo-card__border-glow-blur';
+    if (maskUrl) applyMask(borderGlowBlur);
+    var blurSpinner = document.createElement('div');
+    blurSpinner.className = 'holo-card__glow-spinner';
+    borderGlowBlur.appendChild(blurSpinner);
+    card.appendChild(borderGlowBlur);
+
+    // 边框光效主体
+    var borderGlow = document.createElement('div');
+    borderGlow.className = 'holo-card__border-glow';
+    if (maskUrl) applyMask(borderGlow);
+    var spinner = document.createElement('div');
+    spinner.className = 'holo-card__glow-spinner';
+    borderGlow.appendChild(spinner);
+    var innerCover = document.createElement('div');
+    innerCover.className = 'holo-card__glow-inner';
+    if (maskUrl) applyMask(innerCover);
+    borderGlow.appendChild(innerCover);
+    card.appendChild(borderGlow);
+
+    // 内容容器
+    var content = document.createElement('div');
+    content.className = 'holo-card__content';
+    if (maskUrl) applyMask(content);
+
+    // 图片
+    var img = document.createElement('img');
+    img.className = 'holo-card__img';
+    img.src = CARD_IMAGE;
+    img.alt = CARD_ALT;
+    img.draggable = false;
+    img.onerror = function () {
+      img.style.display = 'none';
+      var fb = document.createElement('div');
+      fb.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;' +
+        'background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);color:rgba(255,255,255,0.6);' +
+        'font-size:24px;font-family:sans-serif;text-align:center;padding:40px;';
+      fb.textContent = CARD_ALT || '卡牌图片加载失败';
+      content.insertBefore(fb, content.firstChild);
+    };
+    content.appendChild(img);
+
+    // 边缘高光
+    var edge = document.createElement('div');
+    edge.className = 'holo-card__edge';
+    content.appendChild(edge);
+
+    // 全息层
+    var holo = document.createElement('div');
+    holo.className = 'holo-card__holo';
+    content.appendChild(holo);
+
+    // 高光层
+    var glare = document.createElement('div');
+    glare.className = 'holo-card__glare';
+    content.appendChild(glare);
+
+    // 闪光粒子
+    var sparkle = document.createElement('div');
+    sparkle.className = 'holo-card__sparkle';
+    for (var i = 0; i < SPARKLE_COUNT; i++) {
+      var dot = document.createElement('span');
+      dot.className = 'sparkle-dot';
+      dot.style.setProperty('--dot-size', rand(2, 4) + 'px');
+      dot.style.setProperty('--dot-opacity', rand(0.4, 1).toFixed(2));
+      dot.style.setProperty('--blink-dur', rand(1.5, 3.5).toFixed(2) + 's');
+      dot.style.setProperty('--blink-delay', rand(0, 3).toFixed(2) + 's');
+      dot.style.left = rand(5, 95) + '%';
+      dot.style.top = rand(5, 95) + '%';
+      sparkle.appendChild(dot);
+    }
+    content.appendChild(sparkle);
+
+    card.appendChild(content);
+    return card;
+  }
+
+  function applyMask(el) {
+    el.style.webkitMaskImage = maskUrl;
+    el.style.maskImage = maskUrl;
+    el.style.webkitMaskSize = '100% 100%';
+    el.style.maskSize = '100% 100%';
+    el.style.webkitMaskRepeat = 'no-repeat';
+    el.style.maskRepeat = 'no-repeat';
+    el.style.webkitMaskPosition = 'center center';
+    el.style.maskPosition = 'center center';
+    el.style.webkitMaskMode = 'luminance';
+    el.style.maskMode = 'luminance';
+  }
+
+  /* ── 交互 ── */
+  function attachInteraction(el) {
+    el.addEventListener('mousemove', function (e) { handleMove(el, e); });
+    el.addEventListener('mouseleave', function () { handleLeave(el); });
+    el.addEventListener('touchstart', function (e) { e.preventDefault(); }, { passive: false });
+    el.addEventListener('touchmove', function (e) { e.preventDefault(); handleMove(el, e.touches[0]); }, { passive: false });
+    el.addEventListener('touchend', function () { handleLeave(el); });
+  }
+
+  function handleMove(el, pointer) {
+    var rect = el.getBoundingClientRect();
+    var px = clamp(((pointer.clientX - rect.left) / rect.width) * 100, 0, 100);
+    var py = clamp(((pointer.clientY - rect.top) / rect.height) * 100, 0, 100);
+    var rotY = mapRange(px, 0, 100, -MAX_TILT, MAX_TILT);
+    var rotX = mapRange(py, 0, 100, MAX_TILT, -MAX_TILT);
+
+    el.classList.add('active');
+    el.style.transform = 'rotateX(' + rotX.toFixed(2) + 'deg) rotateY(' + rotY.toFixed(2) + 'deg) scale(1.04)';
+    el.style.setProperty('--glare-x', px.toFixed(1) + '%');
+    el.style.setProperty('--glare-y', py.toFixed(1) + '%');
+
+    var bgX = 50 + (px - 50) * 0.6;
+    var bgY = 50 + (py - 50) * 0.6;
+    el.style.setProperty('--bg-pos-x', bgX.toFixed(1) + '%');
+    el.style.setProperty('--bg-pos-y', bgY.toFixed(1) + '%');
+
+    var angle = Math.atan2(py - 50, px - 50) * (180 / Math.PI) + 130;
+    el.style.setProperty('--edge-angle', angle.toFixed(0) + 'deg');
+  }
+
+  function handleLeave(el) {
+    el.classList.remove('active');
+    el.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+    el.style.setProperty('--glare-x', '50%');
+    el.style.setProperty('--glare-y', '50%');
+    el.style.setProperty('--bg-pos-x', '50%');
+    el.style.setProperty('--bg-pos-y', '50%');
+    el.style.setProperty('--edge-angle', '130deg');
+  }
+
+  /* ── 工具 ── */
+  function clamp(v, lo, hi) { return Math.min(Math.max(v, lo), hi); }
+  function rand(a, b) { return a + Math.random() * (b - a); }
+  function mapRange(v, iMin, iMax, oMin, oMax) { return ((v - iMin) / (iMax - iMin)) * (oMax - oMin) + oMin; }
+
+  /* ── 启动 ── */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+</script>
+</body>
+</html>
