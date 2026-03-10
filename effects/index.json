@@ -12,6 +12,7 @@
   { "name": "发射彩花",         "cat": "UI与交互",   "file": "launch-confetti.html",    "icon": "🎉", "author": "FX Lab" },
   { "name": "粒子交互背景",     "cat": "UI与交互",   "file": "particles-interactive.html","icon": "🔵", "author": "FX Lab" },
   { "name": "流体下载动画",     "cat": "UI与交互",   "file": "fluid-download.html",     "icon": "⬇️", "author": "FX Lab" },
+  { "name": "3D骰子物理模拟",   "cat": "UI与交互",   "file": "3d-dices.html",           "icon": "🎲", "author": "FX Lab" },
   { "name": "SSR 卡面碎光",     "cat": "卡牌专属",   "file": "ssr-shimmer.html",        "icon": "💎", "author": "FX Lab" },
   { "name": "全息投影卡背",     "cat": "卡牌专属",   "file": "hologram-card.html",      "icon": "🃏", "author": "FX Lab" },
   { "name": "卡牌升星爆发",     "cat": "卡牌专属",   "file": "star-burst.html",         "icon": "⭐", "author": "FX Lab" },
