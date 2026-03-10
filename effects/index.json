@@ -15,6 +15,7 @@
   { "name": "3D骰子物理模拟",   "cat": "UI与交互",   "file": "3d-dices.html",           "icon": "🎲", "author": "FX Lab" },
   { "name": "炫彩流动搜索框",   "cat": "UI与交互",   "file": "gemini-input.html",       "icon": "🔍", "author": "FX Lab" },
   { "name": "运动模糊加载动画", "cat": "UI与交互",   "file": "loader-motion.html",      "icon": "⏳", "author": "FX Lab" },
+  { "name": "金属流动按钮",     "cat": "UI与交互",   "file": "metal-flow-btn.html",     "icon": "⚙️", "author": "FX Lab" },
   { "name": "SSR 卡面碎光",     "cat": "卡牌专属",   "file": "ssr-shimmer.html",        "icon": "💎", "author": "FX Lab" },
   { "name": "全息投影卡背",     "cat": "卡牌专属",   "file": "hologram-card.html",      "icon": "🃏", "author": "FX Lab" },
   { "name": "卡牌升星爆发",     "cat": "卡牌专属",   "file": "star-burst.html",         "icon": "⭐", "author": "FX Lab" },

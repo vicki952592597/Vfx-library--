@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>金属流动按钮</title>
+<style>
+@property --gradient_rotate {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 62.5%;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  font-size: 1.8rem;
+  position: relative;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg,
+              rgb(010 010 020 / 1.0) 50%,
+              rgb(020 020 040 / 1.0));
+  filter: drop-shadow(0 0 5rem rgb(220 220 220 / 0.2));
+}
+
+button {
+  --gradient_rotate: 0deg;
+  --border_width: 1rem;
+
+  --metal_01: rgb(200 200 220 / 1.0);
+  --metal_02: rgb(160 160 180 / 1.0);
+  --metal_03: rgb(120 120 140 / 1.0);
+  --metal_04: rgb(080 080 100 / 1.0);
+  --metal_05: rgb(040 040 060 / 1.0);
+  --metal_06: rgb(010 010 010 / 1.0);
+
+  position: relative;
+  cursor: pointer;
+  padding-inline: 3rem;
+  padding-block: 3rem;
+  background: linear-gradient(0deg,
+              rgb(010 010 010 / 1.0) 10%,
+              rgb(040 040 050 / 1.0)) padding-box,
+              conic-gradient(from var(--gradient_rotate),
+              rgb(from var(--metal_01) r g b / 0.5),
+              rgb(from var(--metal_01) r g b / 0.0),
+              rgb(from var(--metal_06) r g b / 0.0),
+              rgb(from var(--metal_06) r g b / 1.0),
+              rgb(from var(--metal_04) r g b / 0.5),
+              rgb(from var(--metal_04) r g b / 0.0),
+              rgb(from var(--metal_04) r g b / 1.0),
+              rgb(from var(--metal_01) r g b / 0.5)) border-box;
+
+  border-radius: 100%;
+  border: var(--border_width) solid transparent;
+  animation: button_gradient_rotate 12s linear infinite;
+}
+
+button > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+button::before {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * var(--border_width));
+  z-index: -1;
+  border-radius: inherit;
+  background: conic-gradient(from var(--gradient_rotate),
+             rgb(from var(--metal_03) r g b / 1.0),
+             rgb(from var(--metal_01) r g b / 1.0),
+             rgb(from var(--metal_01) r g b / 1.0),
+             rgb(from var(--metal_06) r g b / 1.0),
+             rgb(from var(--metal_02) r g b / 1.0),
+             rgb(from var(--metal_05) r g b / 1.0),
+             rgb(from var(--metal_04) r g b / 1.0),
+             rgb(from var(--metal_03) r g b / 1.0)) padding-box,
+             conic-gradient(from 0deg,
+             rgb(from var(--metal_03) r g b / 1.0),
+             rgb(from var(--metal_01) r g b / 1.0),
+             rgb(from var(--metal_01) r g b / 1.0),
+             rgb(from var(--metal_06) r g b / 1.0),
+             rgb(from var(--metal_02) r g b / 1.0),
+             rgb(from var(--metal_05) r g b / 1.0),
+             rgb(from var(--metal_04) r g b / 1.0),
+             rgb(from var(--metal_03) r g b / 1.0)) border-box;
+  animation: button_gradient_rotate 8s linear infinite reverse;
+  border: 0.25rem solid transparent;
+}
+
+@keyframes button_gradient_rotate {
+  from { --gradient_rotate: 0deg; }
+  to   { --gradient_rotate: 360deg; }
+}
+</style>
+</head>
+<body>
+<button>
+  <svg data-name="1-Arrow Up"
+       xmlns="http://www.w3.org/2000/svg"
+       width="60" height="60"
+       fill="rgb(250 250 250 / 1.0)"
+       viewBox="0 0 32 32">
+    <path d="m26.71 10.29-10-10a1 1 0 0 0-1.41 0l-10 10 1.41 1.41L15 3.41V32h2V3.41l8.29 8.29z"/>
+  </svg>
+</button>
+</body>
+</html>
