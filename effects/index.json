@@ -13,6 +13,7 @@
   { "name": "卡牌升星爆发",     "cat": "卡牌专属",   "file": "star-burst.html",         "icon": "⭐", "author": "FX Lab" },
   { "name": "稀有度火焰边框",   "cat": "卡牌专属",   "file": "flame-border.html",       "icon": "🔥", "author": "FX Lab" },
   { "name": "全息卡牌交互",     "cat": "卡牌专属",   "file": "holo-card-interactive.html", "icon": "🌈", "author": "FX Lab" },
+  { "name": "液体UI元素",       "cat": "卡牌专属",   "file": "liquid-ui-elements.html",    "icon": "💧", "author": "FX Lab" },
   { "name": "动态法线贴图",     "cat": "材质与遮罩", "file": "normal-map.html",         "icon": "🗺️", "author": "FX Lab" },
   { "name": "溶解消散遮罩",     "cat": "材质与遮罩", "file": "dissolve-mask.html",      "icon": "💨", "author": "FX Lab" },
   { "name": "水晶折射材质",     "cat": "材质与遮罩", "file": "crystal-refraction.html", "icon": "🔮", "author": "FX Lab" }
