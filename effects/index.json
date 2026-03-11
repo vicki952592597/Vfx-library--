@@ -18,6 +18,7 @@
   { "name": "运动模糊加载动画", "cat": "UI与交互",   "file": "loader-motion.html",      "icon": "⏳", "author": "FX Lab" },
   { "name": "金属流动按钮",     "cat": "UI与交互",   "file": "metal-flow-btn.html",     "icon": "⚙️", "author": "FX Lab" },
   { "name": "弹窗覆盖层",       "cat": "UI与交互",   "file": "pop-up-overlay.html",     "icon": "🪟", "author": "FX Lab" },
+  { "name": "模态弹窗",         "cat": "UI与交互",   "file": "daily-ui-popup.html",     "icon": "📋", "author": "FX Lab" },
   { "name": "SSR 卡面碎光",     "cat": "卡牌专属",   "file": "ssr-shimmer.html",        "icon": "💎", "author": "FX Lab" },
   { "name": "全息投影卡背",     "cat": "卡牌专属",   "file": "hologram-card.html",      "icon": "🃏", "author": "FX Lab" },
   { "name": "卡牌升星爆发",     "cat": "卡牌专属",   "file": "star-burst.html",         "icon": "⭐", "author": "FX Lab" },
