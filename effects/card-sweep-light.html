@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>卡牌扫光特效</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 100vw;
+      height: 100vh;
+      background: #0a0a0a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      overflow: hidden;
+      font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+    }
+    canvas {
+      cursor: pointer;
+    }
+    .hint {
+      margin-top: 20px;
+      color: rgba(255,255,255,0.4);
+      font-size: 14px;
+      letter-spacing: 2px;
+      user-select: none;
+      animation: hintPulse 2s ease-in-out infinite;
+    }
+    @keyframes hintPulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+<div class="hint">点击卡牌触发扫光</div>
+
+<script>
+(function () {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+
+  // ---------- 配置 ----------
+  const DISPLAY_W = 450;
+  const DISPLAY_H = 600;
+  const SWEEP_DURATION = 2000;
+
+  // 高清适配
+  const dpr = window.devicePixelRatio || 1;
+  const W = DISPLAY_W * dpr;
+  const H = DISPLAY_H * dpr;
+  canvas.width = W;
+  canvas.height = H;
+  canvas.style.width = DISPLAY_W + 'px';
+  canvas.style.height = DISPLAY_H + 'px';
+
+  // ---------- 预创建可复用的离屏 canvas ----------
+  function createOffscreen() {
+    const c = document.createElement('canvas');
+    c.width = W;
+    c.height = H;
+    return c;
+  }
+  const offA = createOffscreen();
+  const offACtx = offA.getContext('2d');
+  const offB = createOffscreen();
+  const offBCtx = offB.getContext('2d');
+
+  // ========== 可配置项 ==========
+  // 卡牌图片路径（留空或null表示无卡牌，仅展示扫光）
+  const CARD_SRC = 'assets/card-sweep-card1.png';
+  // 遮罩图片路径（透明PNG，有色区域=显示范围）
+  const MASK_SRC = 'assets/card-sweep-mask.png';
+  // ==============================
+
+  // ---------- 加载图片 ----------
+  let cardImg = null;
+  let maskImg = new Image();
+  let totalToLoad = 1; // 至少加载遮罩
+  let loaded = 0;
+
+  function onLoad() {
+    loaded++;
+    if (loaded >= totalToLoad) {
+      drawScene(0, false);
+    }
+  }
+
+  // 加载遮罩（必须）
+  maskImg.onload = onLoad;
+  maskImg.onerror = function () { console.error('遮罩图片加载失败'); };
+  maskImg.src = MASK_SRC;
+
+  // 加载卡牌（可选）
+  if (CARD_SRC) {
+    cardImg = new Image();
+    totalToLoad = 2;
+    cardImg.onload = onLoad;
+    cardImg.onerror = function () {
+      console.warn('卡牌图片加载失败，将仅展示扫光效果');
+      cardImg = null;
+      totalToLoad = 1;
+      if (loaded >= totalToLoad) drawScene(0, false);
+    };
+    cardImg.src = CARD_SRC;
+  }
+
+  // ---------- 绘制场景 ----------
+  function drawScene(sweepProgress, showSweep) {
+    ctx.clearRect(0, 0, W, H);
+
+    // ======= offA: 合成卡牌 + 扫光 =======
+    offACtx.clearRect(0, 0, W, H);
+
+    // 1. 画卡牌（如果有）
+    offACtx.globalCompositeOperation = 'source-over';
+    if (cardImg) {
+      offACtx.drawImage(cardImg, 0, 0, W, H);
+    }
+
+    // 2. 叠加扫光
+    if (showSweep) {
+      offBCtx.clearRect(0, 0, W, H);
+      drawSweepLight(offBCtx, sweepProgress, W, H);
+      // 有卡牌时用 screen 混合产生高光；无卡牌时直接叠加扫光
+      offACtx.globalCompositeOperation = cardImg ? 'screen' : 'source-over';
+      offACtx.drawImage(offB, 0, 0, W, H);
+      offACtx.globalCompositeOperation = 'source-over';
+    }
+
+    // 3. 用遮罩裁剪：destination-in
+    //    遮罩是透明PNG，红色区域alpha>0=显示，透明区域alpha=0=隐藏
+    //    destination-in: 保留已有内容(卡牌+扫光)的RGB，alpha取遮罩的alpha
+    offACtx.globalCompositeOperation = 'destination-in';
+    offACtx.drawImage(maskImg, 0, 0, W, H);  // 直接用原始遮罩图，利用其alpha通道
+    offACtx.globalCompositeOperation = 'source-over';
+
+    // 4. 输出到主 canvas
+    ctx.drawImage(offA, 0, 0, W, H);
+  }
+
+  // ---------- 扫光绘制 (模拟 AE CC Light Sweep) ----------
+  // CC Light Sweep 参数:
+  //   Direction: -30°, Shape: Sharp, Width: 100
+  //   Sweep Intensity: 50, Edge Intensity: 50
+  //   Edge Thickness: 4.00, Light Color: #fff
+  //   Light Reception: Cutout
+  function drawSweepLight(targetCtx, progress, w, h) {
+    const angle = -30 * Math.PI / 180;
+    const diagonal = Math.sqrt(w * w + h * h);
+
+    // CC Light Sweep 参数
+    const sweepIntensity = 50 / 100;  // 0.5 中心最大亮度
+    const edgeIntensity = 50 / 100;   // 0.5 边缘扩散亮度
+    const edgeThickness = 4.0;        // 边缘厚度倍数
+    const ccWidth = 100 * dpr;        // 基础宽度
+
+    // 光带总宽度 = 中心线 + 两侧边缘
+    // Sharp模式: 一条锐利中心线，边缘柔和衰减
+    const totalWidth = ccWidth * edgeThickness;
+    const halfWidth = totalWidth / 2;
+
+    // 移动范围
+    const margin = halfWidth * 1.2;
+    const totalTravel = diagonal + margin * 2;
+    const currentPos = -diagonal / 2 - margin + totalTravel * progress;
+
+    targetCtx.save();
+    targetCtx.translate(w / 2, h / 2);
+    targetCtx.rotate(angle);
+
+    // ---- 底层：宽柔和光晕 (Edge) ----
+    const edgeHalf = halfWidth;
+    const edgeGrad = targetCtx.createLinearGradient(
+      currentPos - edgeHalf, 0,
+      currentPos + edgeHalf, 0
+    );
+    edgeGrad.addColorStop(0, 'rgba(255,255,255,0)');
+    edgeGrad.addColorStop(0.1, fa(0.02));
+    edgeGrad.addColorStop(0.2, fa(0.05));
+    edgeGrad.addColorStop(0.3, fa(0.1));
+    edgeGrad.addColorStop(0.38, fa(0.18));
+    edgeGrad.addColorStop(0.44, fa(0.28));
+    edgeGrad.addColorStop(0.5, fa(0.35));
+    edgeGrad.addColorStop(0.56, fa(0.28));
+    edgeGrad.addColorStop(0.62, fa(0.18));
+    edgeGrad.addColorStop(0.7, fa(0.1));
+    edgeGrad.addColorStop(0.8, fa(0.05));
+    edgeGrad.addColorStop(0.9, fa(0.02));
+    edgeGrad.addColorStop(1, 'rgba(255,255,255,0)');
+
+    targetCtx.fillStyle = edgeGrad;
+    targetCtx.fillRect(currentPos - edgeHalf, -diagonal, totalWidth, diagonal * 2);
+
+    // ---- 中层：较窄的亮光带 ----
+    const midHalf = ccWidth * 1.0;
+    const midGrad = targetCtx.createLinearGradient(
+      currentPos - midHalf, 0,
+      currentPos + midHalf, 0
+    );
+    midGrad.addColorStop(0, 'rgba(255,255,255,0)');
+    midGrad.addColorStop(0.15, fa(0.04));
+    midGrad.addColorStop(0.28, fa(0.12));
+    midGrad.addColorStop(0.38, fa(0.25));
+    midGrad.addColorStop(0.45, fa(0.42));
+    midGrad.addColorStop(0.5, fa(0.55));
+    midGrad.addColorStop(0.55, fa(0.42));
+    midGrad.addColorStop(0.62, fa(0.25));
+    midGrad.addColorStop(0.72, fa(0.12));
+    midGrad.addColorStop(0.85, fa(0.04));
+    midGrad.addColorStop(1, 'rgba(255,255,255,0)');
+
+    targetCtx.fillStyle = midGrad;
+    targetCtx.fillRect(currentPos - midHalf, -diagonal, midHalf * 2, diagonal * 2);
+
+    // ---- 顶层：极窄锐利中心线 (Sharp) ----
+    const coreHalf = ccWidth * 0.08;
+    const coreGrad = targetCtx.createLinearGradient(
+      currentPos - coreHalf, 0,
+      currentPos + coreHalf, 0
+    );
+    coreGrad.addColorStop(0, 'rgba(255,255,255,0)');
+    coreGrad.addColorStop(0.1, fa(0.2));
+    coreGrad.addColorStop(0.25, fa(0.55));
+    coreGrad.addColorStop(0.4, fa(0.8));
+    coreGrad.addColorStop(0.5, fa(0.95));
+    coreGrad.addColorStop(0.6, fa(0.8));
+    coreGrad.addColorStop(0.75, fa(0.55));
+    coreGrad.addColorStop(0.9, fa(0.2));
+    coreGrad.addColorStop(1, 'rgba(255,255,255,0)');
+
+    targetCtx.fillStyle = coreGrad;
+    targetCtx.fillRect(currentPos - coreHalf, -diagonal, coreHalf * 2, diagonal * 2);
+
+    targetCtx.restore();
+  }
+
+  // 辅助函数：快速生成白色rgba
+  function fa(a) {
+    return 'rgba(255,255,255,' + Math.min(1, Math.max(0, a)).toFixed(4) + ')';
+  }
+
+  // ---------- 动画 ----------
+  let isAnimating = false;
+  let animStartTime = 0;
+
+  function animate(timestamp) {
+    if (!isAnimating) return;
+
+    const elapsed = timestamp - animStartTime;
+    let progress = elapsed / SWEEP_DURATION;
+
+    if (progress >= 1) {
+      progress = 1;
+      isAnimating = false;
+      drawScene(0, false);
+      return;
+    }
+
+    // ease-in-out 缓动
+    const eased = progress < 0.5
+      ? 2 * progress * progress
+      : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+    drawScene(eased, true);
+    requestAnimationFrame(animate);
+  }
+
+  // ---------- 点击事件 ----------
+  canvas.addEventListener('click', function () {
+    if (isAnimating) return;
+    isAnimating = true;
+    animStartTime = performance.now();
+    requestAnimationFrame(animate);
+  });
+})();
+</script>
+
+</body>
+</html>
