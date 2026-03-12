@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>影视素材 - 随风飘散的火星余烬 (Embers Overlay)</title>
+<style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        /* 绝对纯黑背景，方便后期软件“滤色/Screen”或“线性减淡/Add”叠加 */
+        background-color: #000000;
+    }
+    canvas {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+    }
+</style>
+</head>
+<body>
+
+<canvas id="embersCanvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('embersCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // 火星粒子总数，营造“无数火星”的氛围
+    const particleCount = 400; 
+    let particles = [];
+
+    // 定义火星的颜色池：亮黄、金橙、深红
+    const colors = ['#ffcc00', '#ff8800', '#ff3300', '#ff5500'];
+
+    class Ember {
+        constructor() {
+            this.init(true);
+            // 初始时让粒子随机分布在全屏高度，避免开局时屏幕是空的
+            this.y = Math.random() * canvas.height;
+        }
+
+        init(isFirstSpawn = false) {
+            // 生成位置：从屏幕底部宽广的区域产生，允许一部分在屏幕左侧外部产生以便吹入屏幕
+            this.x = (Math.random() * canvas.width * 1.2) - (canvas.width * 0.2);
+            this.y = isFirstSpawn ? Math.random() * canvas.height : canvas.height + Math.random() * 100;
+            
+            // 核心物理：体积极小，火星质感
+            this.baseSize = Math.random() * 1.5 + 0.5; 
+            this.size = this.baseSize;
+            
+            // 移动速度：向上飘散（热气流），向右漂浮（风力）
+            this.vx = Math.random() * 1.5 + 0.5;   // 向右的速度
+            this.vy = -(Math.random() * 2 + 1.0);  // 向上的速度
+            
+            // 空气扰动：正弦波摆动
+            this.wobbleSpeed = Math.random() * 0.03 + 0.01;
+            this.wobbleAngle = Math.random() * Math.PI * 2;
+            this.wobbleDistance = Math.random() * 0.8;
+
+            // 生命周期与衰减（模拟火星冷却熄灭）
+            this.life = Math.random() * 0.8 + 0.2; 
+            this.decay = Math.random() * 0.003 + 0.001; 
+            
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        update() {
+            // 加入风的扰动
+            this.x += this.vx + Math.sin(this.wobbleAngle) * this.wobbleDistance;
+            this.y += this.vy;
+            this.wobbleAngle += this.wobbleSpeed;
+            
+            // 生命值衰减，体积随着冷却稍微变小
+            this.life -= this.decay;
+            this.size = Math.max(0.1, this.baseSize * this.life);
+
+            // 如果粒子彻底透明、飘出屏幕右侧、或飘出屏幕顶部，则重置回屏幕下方
+            if (this.life <= 0 || this.x > canvas.width + 50 || this.y < -50) {
+                this.init();
+            }
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            
+            // 使用 lighter 叠加模式让火星交汇处更亮
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.globalAlpha = Math.max(0, this.life);
+            ctx.fillStyle = this.color;
+            
+            // 添加发光光晕效果
+            ctx.shadowBlur = this.size * 5;
+            ctx.shadowColor = this.color;
+            
+            ctx.fill();
+            
+            // 重置 shadow 避免污染其他渲染
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = 1;
+        }
+    }
+
+    // 初始化粒子群
+    for (let i = 0; i < particleCount; i++) {
+        particles.push(new Ember());
+    }
+
+    // 动画主循环
+    function animate() {
+        // 每帧清理屏幕，保持纯黑
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 更新并绘制所有火星
+        for (let i = 0; i < particles.length; i++) {
+            particles[i].update();
+            particles[i].draw();
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    // 启动动画
+    animate();
+</script>
+
+</body>
+</html>
