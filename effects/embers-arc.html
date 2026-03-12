@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>影视素材 - 自然弧线条形与适度清晰微尘</title>
+<style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        /* 绝对纯黑背景，无拖尾残影，适配后期软件滤色叠加 */
+        background-color: #000000;
+    }
+    canvas {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+    }
+</style>
+</head>
+<body>
+
+<canvas id="embersCanvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('embersCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // 粒子总数
+    const particleCount = 380; 
+    let particles = [];
+
+    // 纯正的橙红色系，高级温度感
+    const colors = ['#ff7700', '#ff5500', '#ff3300', '#e62e00'];
+
+    class Ember {
+        constructor() {
+            this.init(true);
+            this.y = Math.random() * canvas.height; // 初始满屏分布
+        }
+
+        init(isFirstSpawn = false) {
+            this.x = Math.random() * canvas.width;
+            this.y = isFirstSpawn ? Math.random() * canvas.height : canvas.height + Math.random() * 80;
+            
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+            
+            // 基础生命周期与衰减
+            this.life = Math.random() * 0.8 + 0.2;
+            this.decay = Math.random() * 0.005 + 0.002;
+
+            // 约 35% 概率为条形粒子
+            this.isBar = Math.random() > 0.65; 
+
+            if (this.isBar) {
+                // 【条形粒子：长短错落，75%较短，25%较长】
+                const isShort = Math.random() > 0.25;
+                this.length = isShort ? (Math.random() * 10 + 5) : (Math.random() * 30 + 15);
+                this.width = isShort ? (Math.random() * 1.5 + 0.5) : (Math.random() * 2.5 + 1);
+                
+                // 【条形粒子：极速飞行参数与弧度参数】
+                this.baseVy = -(Math.random() * 6 + 4); // 极快的上升基础速度
+                
+                // 决定整体往左偏还是往右偏的侧风
+                this.windForce = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 3 + 1); 
+                
+                // 正弦波扰动参数（产生优美的C或S型自然弧线）
+                this.wavePhase = Math.random() * Math.PI * 2;
+                this.waveSpeed = Math.random() * 0.05 + 0.02;
+                this.waveAmplitude = Math.random() * 2.5 + 1;
+                
+            } else {
+                // 【圆形微尘：缓慢且适度清晰】
+                this.vx = (Math.random() - 0.5) * 1.5; 
+                this.vy = -(Math.random() * 1.5 + 0.5); // 较慢的上升速度
+                
+                // 【核心调整】：尺寸比最早期大一点点，比上一版缩小，控制在极度舒适的范围内
+                this.radius = Math.random() * 1.2 + 0.4; 
+            }
+        }
+
+        update() {
+            this.life -= this.decay;
+
+            if (this.isBar) {
+                // 计算带有自然弧度偏移的当前速度
+                this.wavePhase += this.waveSpeed;
+                const currentVx = this.windForce + Math.sin(this.wavePhase) * this.waveAmplitude;
+                const currentVy = this.baseVy;
+                
+                this.x += currentVx;
+                this.y += currentVy;
+                
+                // 实时计算飞行角度，确保头部顺着弧线方向转动
+                this.angle = Math.atan2(currentVy, currentVx);
+
+            } else {
+                // 圆形微尘正常缓慢漂浮
+                this.x += this.vx;
+                this.y += this.vy;
+            }
+
+            // 生命周期结束或飞出屏幕四周边缘时重生
+            if (this.life <= 0 || this.y < -50 || this.x < -50 || this.x > canvas.width + 50) {
+                this.init();
+            }
+        }
+
+        draw() {
+            ctx.save();
+            // 优化透明度渐变，生灭更平滑
+            const alpha = Math.max(0, Math.min(1, this.life * 1.5));
+            ctx.globalAlpha = alpha;
+            
+            if (this.isBar) {
+                // 绘制带弧度飞行和旋转的条形
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                
+                ctx.fillStyle = this.color;
+                // 以粒子位置为头部，向后方绘制长短错落的拖尾
+                ctx.fillRect(-this.length, -this.width / 2, this.length, this.width);
+                
+            } else {
+                // 绘制适度清晰的圆形微尘
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                
+                // 增加一点极微弱的光晕，让存在感自然且不刺眼
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = this.radius * 2; 
+                
+                ctx.fill();
+            }
+            
+            ctx.restore();
+        }
+    }
+
+    // 初始化粒子群
+    for (let i = 0; i < particleCount; i++) {
+        particles.push(new Ember());
+    }
+
+    // 动画循环
+    function animate() {
+        // 每帧清理屏幕（纯黑，无拖影）
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 统一更新和绘制
+        for (let i = 0; i < particles.length; i++) {
+            particles[i].update();
+            particles[i].draw();
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+</script>
+</body>
+</html>
