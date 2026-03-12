@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>统一主风向 - 细腻虚实微尘素材</title>
+<style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        /* 纯黑背景，完美契合 PR/AE 滤色(Screen) 叠加 */
+        background-color: #000000;
+    }
+    canvas {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+    }
+</style>
+</head>
+<body>
+
+<canvas id="cinematicDustCanvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('cinematicDustCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // 保持高密度 700 颗，确保画面丰富度
+    const particleCount = 700; 
+    let particles = [];
+
+    class Particle {
+        constructor() {
+            this.init(true);
+        }
+
+        init(isFirstSpawn = false) {
+            // 初始分布：第一次全屏随机，之后从左侧或底部重生，配合向右上角的流动
+            if (isFirstSpawn) {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+            } else {
+                if (Math.random() > 0.5) {
+                    this.x = -10; 
+                    this.y = Math.random() * canvas.height;
+                } else {
+                    this.x = Math.random() * canvas.width;
+                    this.y = canvas.height + 10;
+                }
+            }
+
+            // --- 核心调整 1：虚实比例与严禁大颗粒 ---
+            // 45% 虚化粒子(会消失)，55% 实体微尘。大幅增加虚化粒子比例
+            this.isBokeh = Math.random() > 0.55; 
+
+            if (this.isBokeh) {
+                // 虚化粒子：严格限制大小！最大半径不超过 2.5，绝不抢戏
+                this.radius = Math.random() * 1.0 + 1.5; 
+                this.maxOpacity = Math.random() * 0.4 + 0.2; // 亮度克制
+            } else {
+                // 实体微尘：极小，像针尖一样的反光尘埃
+                this.radius = Math.random() * 0.4 + 0.2; 
+                this.maxOpacity = Math.random() * 0.5 + 0.3;
+            }
+
+            // --- 核心调整 2：统一主方向流动 ---
+            // 整体朝着“右上方”缓慢流动，保持你喜欢的适中速度
+            let baseSpeed = Math.random() * 0.4 + 0.2; // 基础速率
+            this.vx = baseSpeed * 0.8;  // 向右移动
+            this.vy = -baseSpeed * 0.7; // 向上移动
+
+            // 呼吸与消散机制的生命周期
+            this.life = Math.random() * Math.PI * 2; // 随机初始生命阶段
+            this.lifeSpeed = Math.random() * 0.015 + 0.005; // 呼吸变暗的速度
+            
+            // 额外微弱扰动，让流动看起来不僵硬
+            this.wobbleSpeed = Math.random() * 0.02;
+            this.wobblePhase = Math.random() * Math.PI * 2;
+        }
+
+        update() {
+            // 叠加空气微扰动，但主方向依然坚决向右上方
+            this.x += this.vx + Math.sin(this.wobblePhase) * 0.15;
+            this.y += this.vy;
+
+            this.wobblePhase += this.wobbleSpeed;
+            
+            // --- 核心调整 3：呼吸与消散机制 ---
+            // 通过正弦波让粒子透明度在 0 到 maxOpacity 之间平滑过渡，实现“彻底消失再出现”
+            this.life += this.lifeSpeed;
+            this.currentOpacity = ((Math.sin(this.life) + 1) / 2) * this.maxOpacity;
+
+            // 越界检测：如果飘出屏幕，重新生成（循环流淌）
+            if (this.x > canvas.width + 20 || this.y < -20) {
+                this.init(false);
+            }
+        }
+
+        draw() {
+            // 性能优化：如果透明度极低（已消散看不见），则跳过绘制
+            if (this.currentOpacity < 0.01) return;
+
+            ctx.beginPath();
+            
+            if (this.isBokeh) {
+                // 虚化粒子绘制：使用径向渐变，边缘透明，中心微亮
+                let gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+                gradient.addColorStop(0, `rgba(255, 255, 255, ${this.currentOpacity})`);
+                gradient.addColorStop(0.4, `rgba(255, 255, 255, ${this.currentOpacity * 0.5})`);
+                gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                
+                ctx.fillStyle = gradient;
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // 实体微尘绘制：纯净的小点
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.currentOpacity})`;
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+    }
+
+    // 初始化粒子群
+    for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+    }
+
+    // 动画循环
+    function animate() {
+        // 每帧清空画布（由于是纯黑背景，直接用 clearRect 更干净无拖尾）
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        particles.forEach(particle => {
+            particle.update();
+            particle.draw();
+        });
+
+        requestAnimationFrame(animate);
+    }
+
+    // 启动动画
+    animate();
+</script>
+</body>
+</html>
