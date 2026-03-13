@@ -40,5 +40,6 @@
   { "name": "卡牌扫光特效",     "cat": "卡牌专属",   "file": "card-sweep-light.html",   "icon": "✨", "author": "FX Lab" },
   { "name": "动态法线贴图",     "cat": "材质与遮罩", "file": "normal-map.html",         "icon": "🗺️", "author": "FX Lab" },
   { "name": "溶解消散遮罩",     "cat": "材质与遮罩", "file": "dissolve-mask.html",      "icon": "💨", "author": "FX Lab" },
-  { "name": "水晶折射材质",     "cat": "材质与遮罩", "file": "crystal-refraction.html", "icon": "🔮", "author": "FX Lab" }
+  { "name": "水晶折射材质",     "cat": "材质与遮罩", "file": "crystal-refraction.html", "icon": "🔮", "author": "FX Lab" },
+  { "name": "唯美和风花瓣飘落", "cat": "环境与氛围", "file": "sakura-petals.html",      "icon": "🌸", "author": "FX Lab" }
 ]
