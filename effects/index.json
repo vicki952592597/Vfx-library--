@@ -38,6 +38,7 @@
   { "name": "全息卡牌交互",     "cat": "卡牌专属",   "file": "holo-card-interactive.html", "icon": "🌈", "author": "FX Lab" },
   { "name": "卡片光束扫描",     "cat": "卡牌专属",   "file": "card-beam.html",          "icon": "🔦", "author": "FX Lab" },
   { "name": "卡牌扫光特效",     "cat": "卡牌专属",   "file": "card-sweep-light.html",   "icon": "✨", "author": "FX Lab" },
+  { "name": "卡牌全息效果集",   "cat": "卡牌专属",   "file": "dashen-holo-cards.html",  "icon": "🃏", "author": "大神App" },
   { "name": "动态法线贴图",     "cat": "材质与遮罩", "file": "normal-map.html",         "icon": "🗺️", "author": "FX Lab" },
   { "name": "溶解消散遮罩",     "cat": "材质与遮罩", "file": "dissolve-mask.html",      "icon": "💨", "author": "FX Lab" },
   { "name": "水晶折射材质",     "cat": "材质与遮罩", "file": "crystal-refraction.html", "icon": "🔮", "author": "FX Lab" },
@@ -58,6 +59,5 @@
   { "name": "按钮动效集",       "cat": "大神适用-UI动效", "file": "dashen-buttons.html",        "icon": "🔘", "author": "大神App" },
   { "name": "加载动效集",       "cat": "大神适用-UI动效", "file": "dashen-loading.html",        "icon": "⏳", "author": "大神App" },
   { "name": "排行榜动效集",     "cat": "大神适用-UI动效", "file": "dashen-ranking.html",        "icon": "🏆", "author": "大神App" },
-  { "name": "Toast与弹窗动效",  "cat": "大神适用-UI动效", "file": "dashen-toast-popup.html",    "icon": "💬", "author": "大神App" },
-  { "name": "卡牌全息效果集",   "cat": "大神适用-UI动效", "file": "dashen-holo-cards.html",     "icon": "🃏", "author": "大神App" }
+  { "name": "Toast与弹窗动效",  "cat": "大神适用-UI动效", "file": "dashen-toast-popup.html",    "icon": "💬", "author": "大神App" }
 ]
