@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大神App - 卡牌全息效果集</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --card-width: 280px;
+    --card-height: 400px;
+    --card-radius: 16px;
+}
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0a0a15 0%, #1a1a2e 50%, #0d0d1a 100%);
+    padding: 40px 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+h1 {
+    text-align: center;
+    color: #fff;
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+.subtitle {
+    text-align: center;
+    color: rgba(255,255,255,0.5);
+    font-size: 14px;
+    margin-bottom: 40px;
+}
+
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 50px;
+    max-width: 1400px;
+    margin: 0 auto;
+    justify-items: center;
+}
+
+.card-demo {
+    text-align: center;
+}
+.card-demo h3 {
+    color: #fff;
+    font-size: 14px;
+    margin-top: 20px;
+    font-weight: 500;
+}
+.card-demo p {
+    color: rgba(255,255,255,0.4);
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+/* ========== 基础卡牌容器 ========== */
+.holo-card {
+    width: var(--card-width);
+    height: var(--card-height);
+    position: relative;
+    border-radius: var(--card-radius);
+    transform-style: preserve-3d;
+    transform: perspective(1000px);
+    cursor: pointer;
+    transition: transform 0.1s ease-out;
+}
+
+.holo-card .card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--card-radius);
+    position: relative;
+    z-index: 1;
+}
+
+.holo-card .card-shine {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: var(--card-radius);
+    z-index: 2;
+    pointer-events: none;
+    mix-blend-mode: color-dodge;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.holo-card:hover .card-shine {
+    opacity: 1;
+}
+
+.holo-card .card-glare {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: var(--card-radius);
+    z-index: 3;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.holo-card:hover .card-glare {
+    opacity: 0.3;
+}
+
+/* ========== 1. 基础全息 Holo ========== */
+.holo-basic .card-shine {
+    background: linear-gradient(
+        115deg,
+        transparent 20%,
+        rgba(255, 219, 112, 0.4) 36%,
+        rgba(255, 127, 219, 0.4) 43%,
+        rgba(127, 255, 231, 0.4) 50%,
+        rgba(127, 219, 255, 0.4) 57%,
+        rgba(182, 127, 255, 0.4) 64%,
+        transparent 80%
+    );
+    background-size: 200% 200%;
+    filter: brightness(1.2) contrast(1.1);
+}
+
+.holo-basic:hover .card-shine {
+    animation: holo-gradient 3s ease infinite;
+}
+
+@keyframes holo-gradient {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* ========== 2. 宇宙全息 Cosmos ========== */
+.holo-cosmos .card-shine {
+    background: 
+        radial-gradient(circle at 20% 30%, rgba(255,255,255,0.8) 1px, transparent 1px),
+        radial-gradient(circle at 40% 70%, rgba(255,255,255,0.6) 1px, transparent 1px),
+        radial-gradient(circle at 60% 20%, rgba(255,255,255,0.7) 1px, transparent 1px),
+        radial-gradient(circle at 80% 60%, rgba(255,255,255,0.5) 1px, transparent 1px),
+        radial-gradient(circle at 30% 80%, rgba(255,255,255,0.6) 1px, transparent 1px),
+        radial-gradient(circle at 70% 40%, rgba(255,255,255,0.8) 1px, transparent 1px),
+        radial-gradient(circle at 10% 50%, rgba(255,255,255,0.5) 1px, transparent 1px),
+        radial-gradient(circle at 90% 30%, rgba(255,255,255,0.7) 1px, transparent 1px),
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.4) 1px, transparent 1px),
+        linear-gradient(125deg, 
+            transparent 30%,
+            rgba(100, 200, 255, 0.2) 45%,
+            rgba(200, 100, 255, 0.2) 55%,
+            transparent 70%
+        );
+    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 200% 200%;
+}
+
+.holo-cosmos:hover .card-shine {
+    animation: cosmos-twinkle 2s ease-in-out infinite, cosmos-shift 4s ease infinite;
+}
+
+@keyframes cosmos-twinkle {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.5); }
+}
+
+@keyframes cosmos-shift {
+    0%, 100% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 50%; }
+    50% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 100% 50%; }
+}
+
+/* ========== 3. 银河全息 Galaxy ========== */
+.holo-galaxy .card-shine {
+    background: 
+        radial-gradient(ellipse at 25% 25%, rgba(255,255,255,0.9) 0%, transparent 3%),
+        radial-gradient(ellipse at 75% 75%, rgba(255,255,255,0.8) 0%, transparent 4%),
+        radial-gradient(ellipse at 50% 10%, rgba(255,255,255,0.7) 0%, transparent 5%),
+        radial-gradient(ellipse at 10% 80%, rgba(255,255,255,0.6) 0%, transparent 3%),
+        radial-gradient(ellipse at 90% 40%, rgba(255,255,255,0.8) 0%, transparent 4%),
+        linear-gradient(
+            135deg,
+            rgba(255, 0, 128, 0.3) 0%,
+            rgba(128, 0, 255, 0.3) 25%,
+            rgba(0, 128, 255, 0.3) 50%,
+            rgba(0, 255, 128, 0.3) 75%,
+            rgba(255, 255, 0, 0.3) 100%
+        );
+    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 400% 400%;
+}
+
+.holo-galaxy:hover .card-shine {
+    animation: galaxy-rotate 6s linear infinite;
+}
+
+@keyframes galaxy-rotate {
+    0% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%; }
+    100% { background-position: 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 100% 100%; }
+}
+
+/* ========== 4. 彩虹全息 Rainbow ========== */
+.holo-rainbow .card-shine {
+    background: linear-gradient(
+        125deg,
+        rgba(255, 0, 0, 0.4) 0%,
+        rgba(255, 127, 0, 0.4) 14%,
+        rgba(255, 255, 0, 0.4) 28%,
+        rgba(0, 255, 0, 0.4) 42%,
+        rgba(0, 255, 255, 0.4) 56%,
+        rgba(0, 0, 255, 0.4) 70%,
+        rgba(127, 0, 255, 0.4) 84%,
+        rgba(255, 0, 255, 0.4) 100%
+    );
+    background-size: 300% 300%;
+    filter: saturate(1.5);
+}
+
+.holo-rainbow:hover .card-shine {
+    animation: rainbow-wave 2s linear infinite;
+}
+
+@keyframes rainbow-wave {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+
+/* ========== 5. 辐射全息 Radiant ========== */
+.holo-radiant .card-shine {
+    background: 
+        repeating-conic-gradient(
+            from 0deg at 50% 50%,
+            transparent 0deg,
+            rgba(255, 255, 255, 0.1) 1deg,
+            transparent 2deg
+        ),
+        radial-gradient(
+            circle at 50% 50%,
+            rgba(255, 215, 0, 0.4) 0%,
+            rgba(255, 165, 0, 0.2) 30%,
+            transparent 70%
+        );
+}
+
+.holo-radiant:hover .card-shine {
+    animation: radiant-spin 8s linear infinite;
+}
+
+@keyframes radiant-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ========== 6. V卡效果 V-Card ========== */
+.holo-vcard .card-shine {
+    background: 
+        repeating-linear-gradient(
+            45deg,
+            transparent 0px,
+            transparent 2px,
+            rgba(255, 255, 255, 0.05) 2px,
+            rgba(255, 255, 255, 0.05) 4px
+        ),
+        linear-gradient(
+            135deg,
+            transparent 20%,
+            rgba(255, 200, 100, 0.5) 35%,
+            rgba(100, 200, 255, 0.5) 50%,
+            rgba(255, 100, 200, 0.5) 65%,
+            transparent 80%
+        );
+    background-size: 100% 100%, 250% 250%;
+}
+
+.holo-vcard:hover .card-shine {
+    animation: vcard-shine 2.5s ease infinite;
+}
+
+@keyframes vcard-shine {
+    0%, 100% { background-position: 0% 0%, 0% 0%; }
+    50% { background-position: 0% 0%, 100% 100%; }
+}
+
+/* ========== 7. VMAX效果 ========== */
+.holo-vmax .card-shine {
+    background: 
+        linear-gradient(
+            45deg,
+            transparent 40%,
+            rgba(255, 255, 255, 0.8) 45%,
+            rgba(255, 255, 255, 0.8) 55%,
+            transparent 60%
+        ),
+        linear-gradient(
+            -45deg,
+            transparent 40%,
+            rgba(255, 200, 50, 0.4) 45%,
+            rgba(255, 200, 50, 0.4) 55%,
+            transparent 60%
+        ),
+        radial-gradient(
+            ellipse at 50% 0%,
+            rgba(255, 255, 255, 0.3) 0%,
+            transparent 50%
+        );
+    background-size: 300% 300%, 300% 300%, 100% 100%;
+}
+
+.holo-vmax:hover .card-shine {
+    animation: vmax-shine 1.5s ease infinite;
+}
+
+@keyframes vmax-shine {
+    0% { background-position: 200% 200%, 200% 200%, 0% 0%; }
+    100% { background-position: -100% -100%, -100% -100%, 0% 0%; }
+}
+
+/* ========== 8. 全画幅 Full Art ========== */
+.holo-fullart .card-shine {
+    background: 
+        repeating-linear-gradient(
+            90deg,
+            transparent 0px,
+            rgba(255, 255, 255, 0.03) 1px,
+            transparent 2px,
+            transparent 30px
+        ),
+        repeating-linear-gradient(
+            0deg,
+            transparent 0px,
+            rgba(255, 255, 255, 0.03) 1px,
+            transparent 2px,
+            transparent 30px
+        ),
+        linear-gradient(
+            160deg,
+            transparent 30%,
+            rgba(200, 150, 255, 0.4) 45%,
+            rgba(150, 200, 255, 0.4) 55%,
+            transparent 70%
+        );
+    background-size: 100% 100%, 100% 100%, 300% 300%;
+}
+
+.holo-fullart:hover .card-shine {
+    animation: fullart-sweep 3s ease infinite;
+}
+
+@keyframes fullart-sweep {
+    0%, 100% { background-position: 0% 0%, 0% 0%, 200% 200%; }
+    50% { background-position: 0% 0%, 0% 0%, -100% -100%; }
+}
+
+/* ========== 9. 秘稀金卡 Secret Gold ========== */
+.holo-gold .card-shine {
+    background: 
+        linear-gradient(
+            135deg,
+            transparent 20%,
+            rgba(255, 215, 0, 0.6) 30%,
+            rgba(255, 255, 200, 0.8) 35%,
+            rgba(255, 215, 0, 0.6) 40%,
+            transparent 50%,
+            rgba(255, 215, 0, 0.4) 60%,
+            rgba(255, 255, 200, 0.6) 65%,
+            rgba(255, 215, 0, 0.4) 70%,
+            transparent 80%
+        );
+    background-size: 400% 400%;
+    mix-blend-mode: overlay;
+}
+
+.holo-gold .card-image {
+    filter: sepia(0.3) saturate(1.2);
+}
+
+.holo-gold:hover .card-shine {
+    animation: gold-shimmer 2s ease infinite;
+}
+
+@keyframes gold-shimmer {
+    0% { background-position: 200% 200%; }
+    100% { background-position: -100% -100%; }
+}
+
+/* ========== 10. 秘稀银卡 Secret Silver ========== */
+.holo-silver .card-shine {
+    background: 
+        linear-gradient(
+            135deg,
+            transparent 20%,
+            rgba(200, 200, 220, 0.6) 30%,
+            rgba(255, 255, 255, 0.9) 35%,
+            rgba(200, 200, 220, 0.6) 40%,
+            transparent 50%,
+            rgba(180, 180, 200, 0.4) 60%,
+            rgba(255, 255, 255, 0.7) 65%,
+            rgba(180, 180, 200, 0.4) 70%,
+            transparent 80%
+        );
+    background-size: 400% 400%;
+    mix-blend-mode: overlay;
+}
+
+.holo-silver .card-image {
+    filter: grayscale(0.2) brightness(1.1);
+}
+
+.holo-silver:hover .card-shine {
+    animation: silver-shimmer 2s ease infinite;
+}
+
+@keyframes silver-shimmer {
+    0% { background-position: 200% 200%; }
+    100% { background-position: -100% -100%; }
+}
+
+/* ========== 光晕效果 (通用) ========== */
+.holo-card .card-glare {
+    background: radial-gradient(
+        circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+        rgba(255, 255, 255, 0.4) 0%,
+        transparent 50%
+    );
+}
+
+/* ========== 悬浮阴影 ========== */
+.holo-card::after {
+    content: '';
+    position: absolute;
+    top: 5%;
+    left: 5%;
+    width: 90%;
+    height: 90%;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: var(--card-radius);
+    filter: blur(20px);
+    z-index: -1;
+    transform: translateY(20px);
+    opacity: 0.5;
+    transition: all 0.3s;
+}
+
+.holo-card:hover::after {
+    transform: translateY(30px) scale(0.95);
+    opacity: 0.7;
+    filter: blur(30px);
+}
+</style>
+</head>
+<body>
+
+<h1>🃏 卡牌全息效果集</h1>
+<p class="subtitle">鼠标悬浮并移动查看效果 | 共10种全息风格</p>
+
+<div class="cards-grid">
+    
+    <!-- 1. 基础全息 -->
+    <div class="card-demo">
+        <div class="holo-card holo-basic" onmousemove="handleMove(event, this)" onmouseleave="handleLeave(this)">
+            <img class="card-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='400'%3E%3Crect fill='%231a1a2e' width='280' height='400'/%3E%3Ctext x='140' y='200' text-anchor='middle' fill='%23666' font-size='14'%3E卡牌图片%3C/text%3E%3C/svg%3E" alt="Card">
+            <div class="card-shine"></div>
+            <div class="card-glare"></div>
+        </div>
+        <h3>🌈 基础全息 Holo</h3>
+        <p>经典彩虹反光效果</p>
+    </div>
+
+    <!-- 2. 宇宙全息 -->
+    <div class="card-demo">
+        <div class="holo-card holo-cosmos" onmousemove="handleMove(event, this)" onmouseleave="handleLeave(this)">
+            <img class="card-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='400'%3E%3Crect fill='%231a1a2e' width='280' height='400'/%3E%3Ctext x='140' y='200' text-anchor='middle' fill='%23666' font-size='14'%3E卡牌图片%3C/text%3E%3C/svg%3E" alt="Card">
+            <div class="card-shine"></div>
+            <div class="card-glare"></div>
+        </div>
+        <h3>✨ 宇宙全息 Cosmos</h3>
+        <p>星点闪烁深邃效果</p>
+    </div>
+
+    <!-- 3. 银河全息 -->
+    <div class="card-demo">
+        <div class="holo-card holo-galaxy" onmousemove="handleMove(event, this)" onmouseleave="handleLeave(this)">
+            <img class="card-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='400'%3E%3Crect fill='%231a1a2e' width='280' height='400'/%3E%3Ctext x='140' y='200' text-anchor='middle' fill='%23666' font-size='14'%3E卡牌图片%3C/text%3E%3C/svg%3E" alt="Card">
+            <div class="card-shine"></div>
+            <div class="card-glare"></div>
+        </div>
+        <h3>🌌 银河全息 Galaxy</h3>
+        <p>银河般的渐变流动</p>
+    </div>
+
+    <!-- 4. 彩虹全息 -->
+    <div class="card-demo">
+        <div class="holo-card holo-rainbow" onmousemove="handleMove(event, this)" onmouseleave="handleLeave(this)">
+            <img class="card-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='400'%3E%3Crect fill='%231a1a2e' width='280' height='400'/%3E%3Ctext x='140' y='200' text-anchor='middle' fill='%23666' font-size='14'%3E卡牌图片%3C/text%3E%3C/svg%3E" alt="Card">
+            <div class="card-shine"></div>
+            <div class="card-glare"></div>
+        </div>
+        <h3>🌈 彩虹全息 Rainbow</h3>
+        <p>完整彩虹色谱渐变</p>
+    </div>
+
+    <!-- 5. 辐射全息 -->
+    <div class="card-demo">
+        <div class="holo-card holo-radiant" onmousemove="handleMove(event, this)" onmouseleave="handleLeave(this)">
+            <img class="card-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='400'%3E%3Crect fill='%231a1a2e' width='280' height='400'/%3E%3Ctext x='140' y='200' text-anchor='middle' fill='%23666' font-size='14'%3E卡牌图片%3C/text%3E%3C/svg%3E" alt="Card">
+            <div class="card-shine"></div>
+            <div class="card-glare"></div>
+        </div>
+        <h3>☀️ 辐射全息 Radiant</h3>
+        <p>中心放射光线效果</p>
+    </div>
+
+    <!-- 6. V卡效果 -->
+    <div class="card-demo">
+        <div class="holo-card holo-vcard" onmousemove="handleMove(event, this)" onmouseleave="handleLeave(this)">
+            <img class="card-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='400'%3E%3Crect fill='%231a1a2e' width='280' height='400'/%3E%3Ctext x='140' y='200' text-anchor='middle' fill='%23666' font-size='14'%3E卡牌图片%3C/text%3E%3C/svg%3E" alt="Card">
+            <div class="card-shine"></div>
+            <div class="card-glare"></div>
+        </div>
+        <h3>⚡ V卡效果 V-Card</h3>
+        <p>纹理条纹+渐变光泽</p>
+    </div>
+
+    <!-- 7. VMAX效果 -->
+    <div class="card-demo">
+        <div class="holo-card holo-vmax" onmousemove="handleMove(event, this)" onmouseleave="handleLeave(this)">
+            <img class="card-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='400'%3E%3Crect fill='%231a1a2e' width='280' height='400'/%3E%3Ctext x='140' y='200' text-anchor='middle' fill='%23666' font-size='14'%3E卡牌图片%3C/text%3E%3C/svg%3E" alt="Card">
+            <div class="card-shine"></div>
+            <div class="card-glare"></div>
+        </div>
+        <h3>💫 VMAX效果</h3>
+        <p>交叉光束扫过效果</p>
+    </div>
+
+    <!-- 8. 全画幅 -->
+    <div class="card-demo">
+        <div class="holo-card holo-fullart" onmousemove="handleMove(event, this)" onmouseleave="handleLeave(this)">
+            <img class="card-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='400'%3E%3Crect fill='%231a1a2e' width='280' height='400'/%3E%3Ctext x='140' y='200' text-anchor='middle' fill='%23666' font-size='14'%3E卡牌图片%3C/text%3E%3C/svg%3E" alt="Card">
+            <div class="card-shine"></div>
+            <div class="card-glare"></div>
+        </div>
+        <h3>🖼️ 全画幅 Full Art</h3>
+        <p>网格纹理+柔和光泽</p>
+    </div>
+
+    <!-- 9. 秘稀金卡 -->
+    <div class="card-demo">
+        <div class="holo-card holo-gold" onmousemove="handleMove(event, this)" onmouseleave="handleLeave(this)">
+            <img class="card-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='400'%3E%3Crect fill='%231a1a2e' width='280' height='400'/%3E%3Ctext x='140' y='200' text-anchor='middle' fill='%23666' font-size='14'%3E卡牌图片%3C/text%3E%3C/svg%3E" alt="Card">
+            <div class="card-shine"></div>
+            <div class="card-glare"></div>
+        </div>
+        <h3>🥇 秘稀金卡 Gold</h3>
+        <p>金色流光闪耀效果</p>
+    </div>
+
+    <!-- 10. 秘稀银卡 -->
+    <div class="card-demo">
+        <div class="holo-card holo-silver" onmousemove="handleMove(event, this)" onmouseleave="handleLeave(this)">
+            <img class="card-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='400'%3E%3Crect fill='%231a1a2e' width='280' height='400'/%3E%3Ctext x='140' y='200' text-anchor='middle' fill='%23666' font-size='14'%3E卡牌图片%3C/text%3E%3C/svg%3E" alt="Card">
+            <div class="card-shine"></div>
+            <div class="card-glare"></div>
+        </div>
+        <h3>🥈 秘稀银卡 Silver</h3>
+        <p>银色金属光泽效果</p>
+    </div>
+
+</div>
+
+<script>
+// 鼠标移动处理 - 3D倾斜 + 光晕跟随
+function handleMove(e, card) {
+    var rect = card.getBoundingClientRect();
+    var x = e.clientX - rect.left;
+    var y = e.clientY - rect.top;
+    var centerX = rect.width / 2;
+    var centerY = rect.height / 2;
+    
+    // 计算旋转角度 (最大15度)
+    var rotateY = ((x - centerX) / centerX) * 15;
+    var rotateX = -((y - centerY) / centerY) * 15;
+    
+    // 应用3D变换
+    card.style.transform = 'perspective(1000px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) scale(1.05)';
+    
+    // 更新光晕位置
+    var percentX = (x / rect.width) * 100;
+    var percentY = (y / rect.height) * 100;
+    card.style.setProperty('--mouse-x', percentX + '%');
+    card.style.setProperty('--mouse-y', percentY + '%');
+}
+
+// 鼠标离开处理
+function handleLeave(card) {
+    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
+}
+
+// 卡牌图片 - 使用网络图片或本地图片
+// 你可以替换为任意图片URL
+var cardImageUrl = 'https://i.imgur.com/placeholder.jpg'; // 占位图
+
+// 页面加载完成后，可以通过URL参数传入图片
+// 例如: ?img=https://example.com/card.jpg
+var urlParams = new URLSearchParams(window.location.search);
+var imgParam = urlParams.get('img');
+if (imgParam) {
+    document.querySelectorAll('.card-image').forEach(function(img) {
+        img.src = imgParam;
+    });
+}
+</script>
+
+</body>
+</html>
