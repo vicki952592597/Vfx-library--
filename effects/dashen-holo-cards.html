@@ -189,16 +189,18 @@ h1 { text-align: center; color: #fff; font-size: 26px; margin-bottom: 8px; }
 </div>
 
 <script>
-// 设置默认图片
-var defaultSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='420'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%231a1a2e'/%3E%3Cstop offset='100%25' style='stop-color:%2316213e'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23g)' width='300' height='420' rx='18'/%3E%3Ctext x='150' y='210' text-anchor='middle' fill='%23555' font-size='13'%3E移动鼠标查看效果%3C/text%3E%3C/svg%3E";
+// 默认使用大神App卡牌图片
+var cardImg = 'https://raw.githubusercontent.com/vicki952592597/Vfx-library--/main/effects/assets/card-jiangwulang.png';
 
-// URL参数获取图片
+// URL参数可覆盖
 var params = new URLSearchParams(window.location.search);
-var imgUrl = params.get('img');
+var imgUrl = params.get('img') || cardImg;
 
 document.querySelectorAll('.card-img').forEach(function(img) {
-    img.src = imgUrl || defaultSvg;
-    img.onerror = function() { this.src = defaultSvg; };
+    img.src = imgUrl;
+    img.onerror = function() { 
+        this.style.background = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)';
+    };
 });
 
 // 卡牌交互
