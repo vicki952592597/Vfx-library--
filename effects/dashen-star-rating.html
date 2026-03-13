@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大神App - 评分星级动效</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    padding: 40px 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+.demo-box {
+    text-align: center;
+}
+.demo-box h3 {
+    color: rgba(255,255,255,0.6);
+    font-size: 12px;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+}
+
+/* 通用评分容器 */
+.fx-rating {
+    display: flex;
+    gap: 6px;
+}
+.fx-rating .rating-item {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    outline: none;
+}
+.fx-rating .rating-item svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* ===== 样式1: 渐变色依次填充 ===== */
+.style-gradient .rating-item svg {
+    fill: #3a3a50;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.style-gradient .rating-item:hover svg {
+    fill: #ffd54f;
+    transform: scale(1.15);
+}
+.style-gradient .rating-item.active svg {
+    animation: gradient-fill 0.5s ease-out forwards;
+}
+.style-gradient .rating-item:nth-child(1).active svg {
+    fill: #FF6B6B;
+    filter: drop-shadow(0 0 10px rgba(255, 107, 107, 0.5));
+}
+.style-gradient .rating-item:nth-child(2).active svg {
+    fill: #FFA06B;
+    filter: drop-shadow(0 0 10px rgba(255, 160, 107, 0.5));
+}
+.style-gradient .rating-item:nth-child(3).active svg {
+    fill: #FFD56B;
+    filter: drop-shadow(0 0 10px rgba(255, 213, 107, 0.5));
+}
+.style-gradient .rating-item:nth-child(4).active svg {
+    fill: #6BFF8A;
+    filter: drop-shadow(0 0 10px rgba(107, 255, 138, 0.5));
+}
+.style-gradient .rating-item:nth-child(5).active svg {
+    fill: #6BFFD5;
+    filter: drop-shadow(0 0 10px rgba(107, 255, 213, 0.5));
+}
+@keyframes gradient-fill {
+    0% { transform: scale(0.5) rotate(-180deg); opacity: 0; }
+    50% { transform: scale(1.3) rotate(20deg); }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+/* ===== 样式2: 游戏弹性简洁 ===== */
+.style-bounce .rating-item {
+    will-change: transform;
+}
+.style-bounce .rating-item svg {
+    fill: #4a4a5a;
+    transition: fill 0.2s ease, transform 0.2s ease;
+    will-change: transform, fill;
+}
+.style-bounce .rating-item:hover svg {
+    fill: #7a7a8a;
+    transform: scale(1.08);
+}
+.style-bounce .rating-item.active svg {
+    fill: #FFCA28;
+    animation: smooth-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.style-bounce .rating-item:nth-child(5).active svg {
+    fill: #FFD700;
+    animation: fifth-star-burst 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+}
+.style-bounce .rating-item:nth-child(5).active::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,215,0,0.4) 0%, transparent 70%);
+    transform: translate(-50%, -50%) scale(0);
+    animation: fifth-glow 0.4s ease-out forwards;
+    pointer-events: none;
+}
+@keyframes smooth-pop {
+    0% { transform: scale(1); }
+    20% { transform: scale(1.18); }
+    40% { transform: scale(0.92); }
+    60% { transform: scale(1.06); }
+    80% { transform: scale(0.98); }
+    100% { transform: scale(1); }
+}
+@keyframes fifth-star-burst {
+    0% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.3) rotate(-8deg); }
+    50% { transform: scale(0.9) rotate(4deg); }
+    75% { transform: scale(1.08) rotate(-2deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+@keyframes fifth-glow {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+}
+
+/* ===== 样式3: 心形Airbnb风格 ===== */
+.style-heart .rating-item svg {
+    fill: #3d3d4a;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.style-heart .rating-item::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 50px; height: 50px;
+    background: radial-gradient(circle, rgba(255,56,92,0.4) 0%, transparent 70%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+}
+.style-heart .rating-item:hover svg {
+    fill: #ff8fa3;
+    transform: scale(1.18);
+}
+.style-heart .rating-item.active::before {
+    animation: heart-glow-pulse 0.8s ease-out;
+}
+.style-heart .rating-item.active svg {
+    fill: #FF385C;
+    filter: drop-shadow(0 0 12px rgba(255,56,92,0.6));
+    animation: heart-love-beat 0.65s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+}
+@keyframes heart-love-beat {
+    0% { transform: scale(1); }
+    10% { transform: scale(0.85); }
+    20% { transform: scale(1.35); }
+    35% { transform: scale(0.92); }
+    50% { transform: scale(1.18); }
+    65% { transform: scale(0.97); }
+    80% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+}
+@keyframes heart-glow-pulse {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+    50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.6; }
+    100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="demo-box">
+    <h3>🌈 渐变色依次填充</h3>
+    <div class="fx-rating style-gradient" id="rating1">
+        <button class="rating-item"><svg viewBox="0 0 32 32"><path d="M16 2l4.3 9.2 10 1.2-7.4 6.8 2 9.8L16 24.3 7.1 29l2-9.8L1.7 12.4l10-1.2z"/></svg></button>
+        <button class="rating-item"><svg viewBox="0 0 32 32"><path d="M16 2l4.3 9.2 10 1.2-7.4 6.8 2 9.8L16 24.3 7.1 29l2-9.8L1.7 12.4l10-1.2z"/></svg></button>
+        <button class="rating-item"><svg viewBox="0 0 32 32"><path d="M16 2l4.3 9.2 10 1.2-7.4 6.8 2 9.8L16 24.3 7.1 29l2-9.8L1.7 12.4l10-1.2z"/></svg></button>
+        <button class="rating-item"><svg viewBox="0 0 32 32"><path d="M16 2l4.3 9.2 10 1.2-7.4 6.8 2 9.8L16 24.3 7.1 29l2-9.8L1.7 12.4l10-1.2z"/></svg></button>
+        <button class="rating-item"><svg viewBox="0 0 32 32"><path d="M16 2l4.3 9.2 10 1.2-7.4 6.8 2 9.8L16 24.3 7.1 29l2-9.8L1.7 12.4l10-1.2z"/></svg></button>
+    </div>
+</div>
+
+<div class="demo-box">
+    <h3>🎮 游戏弹性简洁（第5星特效）</h3>
+    <div class="fx-rating style-bounce" id="rating2">
+        <button class="rating-item"><svg viewBox="0 0 32 32"><path d="M16 2l4.3 9.2 10 1.2-7.4 6.8 2 9.8L16 24.3 7.1 29l2-9.8L1.7 12.4l10-1.2z"/></svg></button>
+        <button class="rating-item"><svg viewBox="0 0 32 32"><path d="M16 2l4.3 9.2 10 1.2-7.4 6.8 2 9.8L16 24.3 7.1 29l2-9.8L1.7 12.4l10-1.2z"/></svg></button>
+        <button class="rating-item"><svg viewBox="0 0 32 32"><path d="M16 2l4.3 9.2 10 1.2-7.4 6.8 2 9.8L16 24.3 7.1 29l2-9.8L1.7 12.4l10-1.2z"/></svg></button>
+        <button class="rating-item"><svg viewBox="0 0 32 32"><path d="M16 2l4.3 9.2 10 1.2-7.4 6.8 2 9.8L16 24.3 7.1 29l2-9.8L1.7 12.4l10-1.2z"/></svg></button>
+        <button class="rating-item"><svg viewBox="0 0 32 32"><path d="M16 2l4.3 9.2 10 1.2-7.4 6.8 2 9.8L16 24.3 7.1 29l2-9.8L1.7 12.4l10-1.2z"/></svg></button>
+    </div>
+</div>
+
+<div class="demo-box">
+    <h3>❤️ 心形Airbnb风格</h3>
+    <div class="fx-rating style-heart" id="rating3">
+        <button class="rating-item"><svg viewBox="0 0 32 32"><path d="M16 28.5c-.5 0-1-.2-1.4-.5C12.3 26 3 18.2 3 11.5 3 7.4 6.4 4 10.5 4c2.2 0 4.2 1 5.5 2.5C17.3 5 19.3 4 21.5 4 25.6 4 29 7.4 29 11.5c0 6.7-9.3 14.5-11.6 16.5-.4.3-.9.5-1.4.5z"/></svg></button>
+        <button class="rating-item"><svg viewBox="0 0 32 32"><path d="M16 28.5c-.5 0-1-.2-1.4-.5C12.3 26 3 18.2 3 11.5 3 7.4 6.4 4 10.5 4c2.2 0 4.2 1 5.5 2.5C17.3 5 19.3 4 21.5 4 25.6 4 29 7.4 29 11.5c0 6.7-9.3 14.5-11.6 16.5-.4.3-.9.5-1.4.5z"/></svg></button>
+        <button class="rating-item"><svg viewBox="0 0 32 32"><path d="M16 28.5c-.5 0-1-.2-1.4-.5C12.3 26 3 18.2 3 11.5 3 7.4 6.4 4 10.5 4c2.2 0 4.2 1 5.5 2.5C17.3 5 19.3 4 21.5 4 25.6 4 29 7.4 29 11.5c0 6.7-9.3 14.5-11.6 16.5-.4.3-.9.5-1.4.5z"/></svg></button>
+        <button class="rating-item"><svg viewBox="0 0 32 32"><path d="M16 28.5c-.5 0-1-.2-1.4-.5C12.3 26 3 18.2 3 11.5 3 7.4 6.4 4 10.5 4c2.2 0 4.2 1 5.5 2.5C17.3 5 19.3 4 21.5 4 25.6 4 29 7.4 29 11.5c0 6.7-9.3 14.5-11.6 16.5-.4.3-.9.5-1.4.5z"/></svg></button>
+        <button class="rating-item"><svg viewBox="0 0 32 32"><path d="M16 28.5c-.5 0-1-.2-1.4-.5C12.3 26 3 18.2 3 11.5 3 7.4 6.4 4 10.5 4c2.2 0 4.2 1 5.5 2.5C17.3 5 19.3 4 21.5 4 25.6 4 29 7.4 29 11.5c0 6.7-9.3 14.5-11.6 16.5-.4.3-.9.5-1.4.5z"/></svg></button>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.fx-rating').forEach(function(rating) {
+    var items = rating.querySelectorAll('.rating-item');
+    var isGradient = rating.classList.contains('style-gradient');
+    
+    items.forEach(function(item, index) {
+        item.addEventListener('click', function() {
+            items.forEach(function(it) { it.classList.remove('active'); });
+            
+            if (isGradient) {
+                var delay = 0;
+                items.forEach(function(it, i) {
+                    if (i <= index) {
+                        setTimeout(function() { it.classList.add('active'); }, delay);
+                        delay += 100;
+                    }
+                });
+            } else {
+                items.forEach(function(it, i) {
+                    if (i <= index) it.classList.add('active');
+                });
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>

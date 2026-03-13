@@ -9,7 +9,7 @@
   { "name": "烟花绽放",         "cat": "环境与氛围", "file": "fireworks.html",           "icon": "🎇", "author": "FX Lab" },
   { "name": "乡村烟花",         "cat": "环境与氛围", "file": "fireworks-countryside.html","icon": "🌃", "author": "FX Lab" },
   { "name": "灰尘粒子",         "cat": "环境与氛围", "file": "dust-particles.html",       "icon": "🌫️", "author": "FX Lab" },
-  { "name": "火苗余烬",         "cat": "环境与氛围", "file": "embers-overlay.html",       "icon": "🔥", "author": "FX Lab" },
+  { "name": "小火余烬",         "cat": "环境与氛围", "file": "embers-overlay.html",       "icon": "🔥", "author": "FX Lab" },
   { "name": "弧线余烬飞散",     "cat": "环境与氛围", "file": "embers-arc.html",           "icon": "🌋", "author": "FX Lab" },
   { "name": "喷射烟花彩带",     "cat": "环境与氛围", "file": "confetti-fountain.html",    "icon": "🎉", "author": "FX Lab" },
   { "name": "按钮霓虹脉冲",     "cat": "UI与交互",   "file": "neon-pulse-btn.html",     "icon": "🔘", "author": "FX Lab" },
@@ -51,5 +51,8 @@
   { "name": "能量粒子场",       "cat": "透明叠加层", "file": "energy-field.html",        "icon": "⚡", "author": "FX Lab" },
   { "name": "彩色纸屑雨",       "cat": "透明叠加层", "file": "confetti-rain.html",       "icon": "🌈", "author": "FX Lab" },
   { "name": "星星坠落",         "cat": "透明叠加层", "file": "falling-stars.html",       "icon": "⭐", "author": "FX Lab" },
-  { "name": "拖尾流星",         "cat": "透明叠加层", "file": "meteor-shower.html",       "icon": "☄️", "author": "FX Lab" }
+  { "name": "拖尾流星",         "cat": "透明叠加层", "file": "meteor-shower.html",       "icon": "☄️", "author": "FX Lab" },
+
+  { "name": "评分星级动效集",   "cat": "大神适用-UI动效", "file": "dashen-star-rating.html",  "icon": "⭐", "author": "大神App" },
+  { "name": "点赞收藏动效集",   "cat": "大神适用-UI动效", "file": "dashen-like-buttons.html", "icon": "❤️", "author": "大神App" }
 ]

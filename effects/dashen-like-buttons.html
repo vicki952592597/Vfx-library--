@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大神App - 点赞收藏动效</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 50px;
+    padding: 40px 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+.demo-box { text-align: center; }
+.demo-box h3 {
+    color: rgba(255,255,255,0.6);
+    font-size: 12px;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+}
+.demo-row {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ===== 爱心点赞 ===== */
+.fx-like-heart {
+    position: relative;
+    width: 70px;
+    height: 70px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.fx-like-heart .heart-icon {
+    width: 40px;
+    height: 40px;
+    fill: #666;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+.fx-like-heart.active .heart-icon {
+    fill: #FF4757;
+    animation: heart-beat 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+@keyframes heart-beat {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.3); }
+    50% { transform: scale(0.9); }
+    75% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+.fx-like-heart .heart-particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+.fx-like-heart.active .heart-particles::before,
+.fx-like-heart.active .heart-particles::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #FF4757;
+}
+.fx-like-heart.active .heart-particles::before {
+    animation: particle1 0.5s ease-out forwards;
+}
+.fx-like-heart.active .heart-particles::after {
+    animation: particle2 0.5s ease-out forwards;
+}
+@keyframes particle1 {
+    0% { transform: translate(-50%,-50%) scale(0); opacity:1; }
+    100% { transform: translate(-35px,-35px) scale(1); opacity:0; }
+}
+@keyframes particle2 {
+    0% { transform: translate(-50%,-50%) scale(0); opacity:1; }
+    100% { transform: translate(30px,-30px) scale(1); opacity:0; }
+}
+
+/* ===== 点赞数跳动 ===== */
+.fx-like-thumb {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    background: transparent;
+    border: 2px solid #444;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.fx-like-thumb .thumb-icon {
+    width: 28px;
+    height: 28px;
+    fill: #666;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+.fx-like-thumb .thumb-count {
+    font-size: 18px;
+    font-weight: 700;
+    color: #666;
+    transition: all 0.15s;
+    min-width: 40px;
+}
+.fx-like-thumb.active {
+    border-color: #FF6B2C;
+    background: rgba(255,107,44,0.1);
+}
+.fx-like-thumb.active .thumb-icon {
+    fill: #FF6B2C;
+    animation: thumb-up 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+.fx-like-thumb.active .thumb-count {
+    color: #FF6B2C;
+    animation: count-jump 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+@keyframes thumb-up {
+    0% { transform: translateY(0) rotate(0); }
+    30% { transform: translateY(-10px) rotate(-12deg); }
+    60% { transform: translateY(-5px) rotate(6deg); }
+    100% { transform: translateY(0) rotate(0); }
+}
+@keyframes count-jump {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+    100% { transform: translateY(0); }
+}
+
+/* ===== 收藏星星 ===== */
+.fx-like-star {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.fx-like-star .star-icon {
+    width: 36px;
+    height: 36px;
+    fill: #666;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+.fx-like-star.active .star-icon {
+    fill: #FFD700;
+    animation: star-shine 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+@keyframes star-shine {
+    0% { transform: scale(1) rotate(0); filter: brightness(1); }
+    25% { transform: scale(1.35) rotate(-18deg); filter: brightness(1.6); }
+    50% { transform: scale(0.9) rotate(18deg); filter: brightness(1.3); }
+    75% { transform: scale(1.12) rotate(-6deg); filter: brightness(1.4); }
+    100% { transform: scale(1) rotate(0); filter: brightness(1); }
+}
+.fx-like-star.active::after {
+    content: '';
+    position: absolute;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,215,0,0.5) 0%, transparent 70%);
+    animation: star-glow 0.5s ease-out forwards;
+}
+@keyframes star-glow {
+    0% { transform: scale(0); opacity: 1; }
+    100% { transform: scale(2.5); opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="demo-box">
+    <h3>❤️ 爱心点赞（粒子爆炸）</h3>
+    <div class="demo-row">
+        <button class="fx-like-heart" onclick="this.classList.toggle('active')">
+            <svg viewBox="0 0 24 24" class="heart-icon">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+            <span class="heart-particles"></span>
+        </button>
+    </div>
+</div>
+
+<div class="demo-box">
+    <h3>👍 点赞数跳动</h3>
+    <div class="demo-row">
+        <button class="fx-like-thumb" id="thumbBtn">
+            <svg viewBox="0 0 24 24" class="thumb-icon">
+                <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/>
+            </svg>
+            <span class="thumb-count">666</span>
+        </button>
+    </div>
+</div>
+
+<div class="demo-box">
+    <h3>⭐ 收藏闪光</h3>
+    <div class="demo-row">
+        <button class="fx-like-star" onclick="this.classList.toggle('active')">
+            <svg viewBox="0 0 24 24" class="star-icon">
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<script>
+// 点赞数增加效果
+var thumbBtn = document.getElementById('thumbBtn');
+thumbBtn.addEventListener('click', function() {
+    var count = this.querySelector('.thumb-count');
+    if (this.classList.contains('active')) {
+        this.classList.remove('active');
+        count.textContent = parseInt(count.textContent) - 1;
+    } else {
+        this.classList.add('active');
+        count.textContent = parseInt(count.textContent) + 1;
+    }
+});
+</script>
+</body>
+</html>
