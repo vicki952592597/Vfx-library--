@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>萤火虫</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{overflow:hidden;width:100vw;height:100vh;background:transparent}
+#canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999}
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+/* ================================================================
+   💫 萤火虫 — 透明背景
+   黄绿色光点随机飘动，带呼吸明灭效果
+   ================================================================ */
+(function(){
+  'use strict';
+  var c = document.getElementById('canvas');
+  var ctx = c.getContext('2d');
+  var W, H, bugs = [], COUNT = 40, running = true;
+
+  function resize(){ W = c.width = innerWidth; H = c.height = innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function rand(a,b){ return Math.random()*(b-a)+a; }
+
+  var COLORS = [
+    '180,255,50',    // 黄绿
+    '160,255,80',    // 嫩绿
+    '200,255,100',   // 亮黄绿
+    '140,230,60',    // 深绿光
+    '220,255,120'    // 浅金绿
+  ];
+
+  function Firefly(){
+    this.reset();
+  }
+  Firefly.prototype.reset = function(){
+    this.x = rand(0, W);
+    this.y = rand(H * 0.3, H * 0.9);
+    this.r = rand(2, 4);
+    // 随机漫步方向
+    this.angle = rand(0, Math.PI * 2);
+    this.speed = rand(0.2, 0.6);
+    this.turnRate = rand(0.01, 0.04);
+    this.turnPhase = rand(0, Math.PI * 2);
+    // 呼吸明灭
+    this.breatheSpeed = rand(0.015, 0.04);
+    this.breathePhase = rand(0, Math.PI * 2);
+    this.maxAlpha = rand(0.5, 1.0);
+    this.t = 0;
+    this.color = COLORS[Math.floor(rand(0, COLORS.length))];
+  };
+  Firefly.prototype.update = function(){
+    this.t++;
+    // 随机转向（柏林噪声感）
+    this.angle += Math.sin(this.t * this.turnRate + this.turnPhase) * 0.06;
+    this.x += Math.cos(this.angle) * this.speed;
+    this.y += Math.sin(this.angle) * this.speed;
+
+    // 呼吸效果：完全熄灭→亮起→熄灭
+    var breathe = Math.sin(this.t * this.breatheSpeed + this.breathePhase);
+    var a = ((breathe + 1) / 2) * this.maxAlpha;  // 0 ~ maxAlpha
+
+    // 外层辉光
+    var grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r * 5);
+    grad.addColorStop(0, 'rgba(' + this.color + ',' + (a * 0.6).toFixed(2) + ')');
+    grad.addColorStop(0.4, 'rgba(' + this.color + ',' + (a * 0.2).toFixed(2) + ')');
+    grad.addColorStop(1, 'rgba(' + this.color + ',0)');
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r * 5, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // 核心亮点
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r * 0.6, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,220,' + (a * 0.95).toFixed(2) + ')';
+    ctx.fill();
+
+    // 边界反弹（柔和）
+    if(this.x < -30) this.x = W + 20;
+    if(this.x > W + 30) this.x = -20;
+    if(this.y < H * 0.1) this.angle = Math.abs(this.angle);
+    if(this.y > H * 0.95) this.angle = -Math.abs(this.angle);
+  };
+
+  for(var i = 0; i < COUNT; i++) bugs.push(new Firefly());
+
+  function frame(){
+    if(!running) return;
+    ctx.clearRect(0, 0, W, H);
+    for(var i = 0; i < bugs.length; i++) bugs[i].update();
+    requestAnimationFrame(frame);
+  }
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){ running = false; } else { running = true; requestAnimationFrame(frame); }
+  });
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

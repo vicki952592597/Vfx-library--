@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>浮升火星</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{overflow:hidden;width:100vw;height:100vh;background:transparent}
+#canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999}
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+/* ================================================================
+   🔥 浮升火星 — 透明背景
+   微小橙红色火星从底部缓缓上升，闪烁消散
+   ================================================================ */
+(function(){
+  'use strict';
+  var c = document.getElementById('canvas');
+  var ctx = c.getContext('2d');
+  var W, H, particles = [], COUNT = 60, running = true;
+
+  function resize(){ W = c.width = innerWidth; H = c.height = innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function rand(a,b){ return Math.random()*(b-a)+a; }
+
+  var COLORS = [
+    {r:255,g:120,b:20},   // 亮橙
+    {r:255,g:80,b:10},    // 红橙
+    {r:255,g:180,b:50},   // 金黄
+    {r:255,g:60,b:30},    // 火红
+    {r:255,g:200,b:80}    // 浅金
+  ];
+
+  function Ember(){
+    this.reset(true);
+  }
+  Ember.prototype.reset = function(scatter){
+    this.x = rand(W * 0.1, W * 0.9);
+    this.y = scatter ? rand(H * 0.3, H) : rand(H + 10, H + 80);
+    this.r = rand(1, 3.5);
+    this.speedY = rand(-0.6, -1.8);
+    this.speedX = rand(-0.3, 0.3);
+    this.windPhase = rand(0, Math.PI * 2);
+    this.windFreq = rand(0.01, 0.03);
+    this.life = 1.0;
+    this.decay = rand(0.002, 0.006);
+    this.flicker = rand(0.02, 0.06);
+    this.flickerPhase = rand(0, Math.PI * 2);
+    this.t = 0;
+    var col = COLORS[Math.floor(rand(0, COLORS.length))];
+    this.cr = col.r; this.cg = col.g; this.cb = col.b;
+  };
+  Ember.prototype.update = function(){
+    this.t++;
+    this.y += this.speedY;
+    this.x += this.speedX + Math.sin(this.t * this.windFreq + this.windPhase) * 0.4;
+    this.life -= this.decay;
+
+    var flick = Math.sin(this.t * this.flicker + this.flickerPhase) * 0.3 + 0.7;
+    var a = this.life * flick;
+    if(a < 0) a = 0;
+
+    // 火星核心
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r * this.life, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(' + this.cr + ',' + this.cg + ',' + this.cb + ',' + a.toFixed(2) + ')';
+    ctx.shadowColor = 'rgba(' + this.cr + ',' + Math.floor(this.cg * 0.5) + ',0,' + (a * 0.8).toFixed(2) + ')';
+    ctx.shadowBlur = this.r * 6;
+    ctx.fill();
+
+    // 微小亮心
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r * this.life * 0.4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,200,' + (a * 0.9).toFixed(2) + ')';
+    ctx.fill();
+
+    if(this.life <= 0 || this.y < -20) this.reset(false);
+  };
+
+  for(var i = 0; i < COUNT; i++) particles.push(new Ember());
+
+  function frame(){
+    if(!running) return;
+    ctx.clearRect(0, 0, W, H);
+    for(var i = 0; i < particles.length; i++) particles[i].update();
+    ctx.shadowBlur = 0;
+    requestAnimationFrame(frame);
+  }
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){ running = false; } else { running = true; requestAnimationFrame(frame); }
+  });
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

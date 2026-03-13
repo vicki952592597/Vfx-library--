@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>拖尾流星</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{overflow:hidden;width:100vw;height:100vh;background:transparent}
+#canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999}
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+/* ================================================================
+   ☄️ 拖尾流星 — 透明背景
+   流星从随机角度划过屏幕，带长发光尾迹
+   多条流星错开出现，间隔自然
+   ================================================================ */
+(function(){
+  'use strict';
+  var c = document.getElementById('canvas');
+  var ctx = c.getContext('2d');
+  var W, H, meteors = [], COUNT = 6, running = true;
+
+  function resize(){ W = c.width = innerWidth; H = c.height = innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function rand(a,b){ return Math.random()*(b-a)+a; }
+
+  var COLORS = [
+    {head:'255,255,255', tail:'180,200,255'},   // 白→冰蓝
+    {head:'255,240,200', tail:'255,180,80'},     // 暖白→金
+    {head:'220,200,255', tail:'140,100,255'},    // 淡紫→紫
+    {head:'200,255,220', tail:'80,200,150'},     // 淡绿→绿
+    {head:'255,220,220', tail:'255,100,120'}     // 粉白→粉红
+  ];
+
+  function Meteor(){
+    this.trail = [];
+    this.active = false;
+    this.cooldown = rand(30, 200);   // 出场延迟帧数
+    this.timer = 0;
+  }
+  Meteor.prototype.spawn = function(){
+    this.active = true;
+    this.trail = [];
+
+    // 随机角度 (30°~60° 从右上往左下)
+    var angle = rand(0.5, 1.0);      // 弧度
+    this.speed = rand(6, 14);
+    this.vx = -Math.cos(angle) * this.speed;
+    this.vy =  Math.sin(angle) * this.speed;
+
+    // 出生位置：屏幕上方或右侧
+    if(Math.random() > 0.5){
+      this.x = rand(W * 0.3, W + 100);
+      this.y = rand(-80, -10);
+    } else {
+      this.x = rand(W + 10, W + 100);
+      this.y = rand(-50, H * 0.4);
+    }
+
+    this.headR = rand(2, 4);
+    this.tailLen = Math.floor(rand(30, 60));   // 尾迹采样点数
+    this.alpha = rand(0.7, 1.0);
+
+    var col = COLORS[Math.floor(rand(0, COLORS.length))];
+    this.headColor = col.head;
+    this.tailColor = col.tail;
+
+    this.life = rand(60, 120);   // 最大存活帧
+    this.age = 0;
+  };
+  Meteor.prototype.update = function(){
+    if(!this.active){
+      this.timer++;
+      if(this.timer >= this.cooldown){
+        this.spawn();
+      }
+      return;
+    }
+
+    this.age++;
+    this.x += this.vx;
+    this.y += this.vy;
+
+    this.trail.push({x: this.x, y: this.y});
+    if(this.trail.length > this.tailLen) this.trail.shift();
+
+    // 渐隐因子
+    var fade = this.age > this.life * 0.6
+      ? 1 - (this.age - this.life * 0.6) / (this.life * 0.4)
+      : 1;
+    if(fade < 0) fade = 0;
+
+    // 绘制尾迹（渐变线条）
+    if(this.trail.length > 1){
+      for(var i = 1; i < this.trail.length; i++){
+        var p0 = this.trail[i - 1];
+        var p1 = this.trail[i];
+        var ratio = i / this.trail.length;
+        var a = ratio * this.alpha * fade;
+        var w = ratio * this.headR * 2;
+
+        ctx.beginPath();
+        ctx.moveTo(p0.x, p0.y);
+        ctx.lineTo(p1.x, p1.y);
+        ctx.strokeStyle = 'rgba(' + this.tailColor + ',' + a.toFixed(3) + ')';
+        ctx.lineWidth = w;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+      }
+    }
+
+    // 流星头部（发光圆点）
+    var ha = this.alpha * fade;
+    // 外层辉光
+    var grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.headR * 6);
+    grad.addColorStop(0, 'rgba(' + this.headColor + ',' + (ha * 0.5).toFixed(2) + ')');
+    grad.addColorStop(0.3, 'rgba(' + this.tailColor + ',' + (ha * 0.2).toFixed(2) + ')');
+    grad.addColorStop(1, 'rgba(' + this.tailColor + ',0)');
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.headR * 6, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // 核心亮点
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.headR, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(' + this.headColor + ',' + ha.toFixed(2) + ')';
+    ctx.shadowColor = 'rgba(' + this.headColor + ',' + (ha * 0.9).toFixed(2) + ')';
+    ctx.shadowBlur = this.headR * 4;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // 超出屏幕或寿命到 → 冷却重生
+    if(this.age >= this.life || this.x < -150 || this.y > H + 150){
+      this.active = false;
+      this.cooldown = rand(40, 250);
+      this.timer = 0;
+    }
+  };
+
+  for(var i = 0; i < COUNT; i++){
+    var m = new Meteor();
+    m.cooldown = rand(0, 150);   // 错开初始出场
+    meteors.push(m);
+  }
+
+  function frame(){
+    if(!running) return;
+    ctx.clearRect(0, 0, W, H);
+    for(var i = 0; i < meteors.length; i++) meteors[i].update();
+    requestAnimationFrame(frame);
+  }
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){ running = false; } else { running = true; requestAnimationFrame(frame); }
+  });
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

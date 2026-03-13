@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>飘雪粒子</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{overflow:hidden;width:100vw;height:100vh;background:transparent}
+#canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999}
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+/* ================================================================
+   ❄️ 飘雪粒子 — 透明背景
+   大小不一的雪花缓缓飘落，带微风摆动
+   ================================================================ */
+(function(){
+  'use strict';
+  var c = document.getElementById('canvas');
+  var ctx = c.getContext('2d');
+  var W, H, particles = [], COUNT = 100, running = true;
+
+  function resize(){ W = c.width = innerWidth; H = c.height = innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function rand(a,b){ return Math.random()*(b-a)+a; }
+
+  function Snow(){
+    this.reset(true);
+  }
+  Snow.prototype.reset = function(scatter){
+    this.x = rand(-20, W + 20);
+    this.y = scatter ? rand(-H * 0.2, H) : rand(-80, -10);
+    this.r = rand(1.5, 5);
+    this.speedY = rand(0.5, 2.0);
+    this.windPhase = rand(0, Math.PI * 2);
+    this.windAmp = rand(0.3, 1.0);
+    this.windFreq = rand(0.005, 0.015);
+    this.drift = rand(-0.15, 0.15);
+    this.alpha = rand(0.4, 0.9);
+    this.rot = rand(0, Math.PI * 2);
+    this.rotSpeed = rand(-0.02, 0.02);
+    this.t = rand(0, 1000);
+  };
+  Snow.prototype.update = function(){
+    this.t++;
+    this.y += this.speedY;
+    this.x += Math.sin(this.t * this.windFreq + this.windPhase) * this.windAmp + this.drift;
+    this.rot += this.rotSpeed;
+
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.rot);
+    ctx.globalAlpha = this.alpha;
+
+    // 六角雪花形状
+    ctx.beginPath();
+    for(var i = 0; i < 6; i++){
+      var angle = (Math.PI / 3) * i;
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(angle) * this.r, Math.sin(angle) * this.r);
+      // 分支
+      var bx = Math.cos(angle) * this.r * 0.6;
+      var by = Math.sin(angle) * this.r * 0.6;
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx + Math.cos(angle + 0.5) * this.r * 0.3, by + Math.sin(angle + 0.5) * this.r * 0.3);
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx + Math.cos(angle - 0.5) * this.r * 0.3, by + Math.sin(angle - 0.5) * this.r * 0.3);
+    }
+    ctx.strokeStyle = 'rgba(255,255,255,' + this.alpha.toFixed(2) + ')';
+    ctx.lineWidth = this.r < 3 ? 1 : 1.5;
+    ctx.shadowColor = 'rgba(200,220,255,0.5)';
+    ctx.shadowBlur = this.r * 2;
+    ctx.stroke();
+
+    // 中心圆点
+    ctx.beginPath();
+    ctx.arc(0, 0, this.r * 0.25, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,' + (this.alpha * 0.8).toFixed(2) + ')';
+    ctx.fill();
+
+    ctx.restore();
+
+    if(this.y > H + 20) this.reset(false);
+  };
+
+  for(var i = 0; i < COUNT; i++) particles.push(new Snow());
+
+  function frame(){
+    if(!running) return;
+    ctx.clearRect(0, 0, W, H);
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
+    for(var i = 0; i < particles.length; i++) particles[i].update();
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(frame);
+  }
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){ running = false; } else { running = true; requestAnimationFrame(frame); }
+  });
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

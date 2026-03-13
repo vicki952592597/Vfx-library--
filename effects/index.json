@@ -42,5 +42,14 @@
   { "name": "溶解消散遮罩",     "cat": "材质与遮罩", "file": "dissolve-mask.html",      "icon": "💨", "author": "FX Lab" },
   { "name": "水晶折射材质",     "cat": "材质与遮罩", "file": "crystal-refraction.html", "icon": "🔮", "author": "FX Lab" },
   { "name": "唯美和风花瓣飘落", "cat": "环境与氛围", "file": "sakura-petals.html",      "icon": "🌸", "author": "FX Lab" },
-  { "name": "唯美和风花瓣（透明背景）", "cat": "环境与氛围", "file": "sakura-petals-transparent.html", "icon": "🌸", "author": "FX Lab" }
+  { "name": "唯美和风花瓣（透明背景）", "cat": "透明叠加层", "file": "sakura-petals-transparent.html", "icon": "🌸", "author": "FX Lab" },
+  { "name": "星光浮尘",         "cat": "透明叠加层", "file": "stardust-float.html",     "icon": "✨", "author": "FX Lab" },
+  { "name": "飘雪粒子",         "cat": "透明叠加层", "file": "snowfall.html",            "icon": "❄️", "author": "FX Lab" },
+  { "name": "浮升火星",         "cat": "透明叠加层", "file": "rising-embers.html",       "icon": "🔥", "author": "FX Lab" },
+  { "name": "萤火虫",           "cat": "透明叠加层", "file": "fireflies.html",           "icon": "💫", "author": "FX Lab" },
+  { "name": "气泡上升",         "cat": "透明叠加层", "file": "bubbles-rise.html",        "icon": "🫧", "author": "FX Lab" },
+  { "name": "能量粒子场",       "cat": "透明叠加层", "file": "energy-field.html",        "icon": "⚡", "author": "FX Lab" },
+  { "name": "彩色纸屑雨",       "cat": "透明叠加层", "file": "confetti-rain.html",       "icon": "🌈", "author": "FX Lab" },
+  { "name": "星星坠落",         "cat": "透明叠加层", "file": "falling-stars.html",       "icon": "⭐", "author": "FX Lab" },
+  { "name": "拖尾流星",         "cat": "透明叠加层", "file": "meteor-shower.html",       "icon": "☄️", "author": "FX Lab" }
 ]

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>气泡上升</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{overflow:hidden;width:100vw;height:100vh;background:transparent}
+#canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999}
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+/* ================================================================
+   🫧 气泡上升 — 透明背景
+   半透明彩色气泡从底部升起，带折射高光
+   ================================================================ */
+(function(){
+  'use strict';
+  var c = document.getElementById('canvas');
+  var ctx = c.getContext('2d');
+  var W, H, bubbles = [], COUNT = 35, running = true;
+
+  function resize(){ W = c.width = innerWidth; H = c.height = innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function rand(a,b){ return Math.random()*(b-a)+a; }
+
+  var HUE_RANGES = [[180,220],[280,320],[100,160],[340,370],[200,260]]; // 蓝/紫/绿/粉/青
+
+  function Bubble(){
+    this.reset(true);
+  }
+  Bubble.prototype.reset = function(scatter){
+    this.r = rand(8, 30);
+    this.x = rand(this.r, W - this.r);
+    this.y = scatter ? rand(0, H) : rand(H + 20, H + 120);
+    this.speedY = rand(-0.4, -1.2);
+    this.wobblePhase = rand(0, Math.PI * 2);
+    this.wobbleFreq = rand(0.008, 0.02);
+    this.wobbleAmp = rand(0.3, 0.8);
+    this.alpha = rand(0.15, 0.35);
+    this.t = rand(0, 1000);
+    var hr = HUE_RANGES[Math.floor(rand(0, HUE_RANGES.length))];
+    this.hue = rand(hr[0], hr[1]);
+  };
+  Bubble.prototype.update = function(){
+    this.t++;
+    this.y += this.speedY;
+    this.x += Math.sin(this.t * this.wobbleFreq + this.wobblePhase) * this.wobbleAmp;
+
+    // 气泡主体（径向渐变模拟球体）
+    var grad = ctx.createRadialGradient(
+      this.x - this.r * 0.3, this.y - this.r * 0.3, this.r * 0.1,
+      this.x, this.y, this.r
+    );
+    grad.addColorStop(0, 'hsla(' + this.hue + ',80%,85%,' + (this.alpha * 0.6).toFixed(2) + ')');
+    grad.addColorStop(0.5, 'hsla(' + this.hue + ',60%,70%,' + (this.alpha * 0.4).toFixed(2) + ')');
+    grad.addColorStop(1, 'hsla(' + this.hue + ',50%,60%,' + (this.alpha * 0.1).toFixed(2) + ')');
+
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // 边缘轮廓
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.strokeStyle = 'hsla(' + this.hue + ',60%,80%,' + (this.alpha * 0.5).toFixed(2) + ')';
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+
+    // 高光点（模拟折射）
+    ctx.beginPath();
+    ctx.arc(this.x - this.r * 0.3, this.y - this.r * 0.3, this.r * 0.18, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,' + (this.alpha * 1.5).toFixed(2) + ')';
+    ctx.fill();
+
+    // 副高光
+    ctx.beginPath();
+    ctx.arc(this.x - this.r * 0.1, this.y - this.r * 0.45, this.r * 0.08, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,' + (this.alpha * 1.2).toFixed(2) + ')';
+    ctx.fill();
+
+    if(this.y < -this.r * 2) this.reset(false);
+  };
+
+  for(var i = 0; i < COUNT; i++) bubbles.push(new Bubble());
+
+  function frame(){
+    if(!running) return;
+    ctx.clearRect(0, 0, W, H);
+    for(var i = 0; i < bubbles.length; i++) bubbles[i].update();
+    requestAnimationFrame(frame);
+  }
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){ running = false; } else { running = true; requestAnimationFrame(frame); }
+  });
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>彩色纸屑雨</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{overflow:hidden;width:100vw;height:100vh;background:transparent}
+#confetti-box{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;perspective:600px}
+.confetti{position:absolute;top:-30px;will-change:transform,opacity;transform-style:preserve-3d}
+.confetti-inner{width:100%;height:100%;border-radius:2px}
+</style>
+</head>
+<body>
+<div id="confetti-box"></div>
+<script>
+/* ================================================================
+   🌈 彩色纸屑雨 — 透明背景
+   各色纸片从顶部飘落，带3D翻转和重力
+   ================================================================ */
+(function(){
+  'use strict';
+  var box = document.getElementById('confetti-box');
+  var pieces = [], COUNT = 60, running = true;
+  var W = innerWidth, H = innerHeight;
+  window.addEventListener('resize', function(){ W = innerWidth; H = innerHeight; });
+
+  function rand(a,b){ return Math.random()*(b-a)+a; }
+
+  var COLORS = [
+    '#FF6B6B','#FFE66D','#4ECDC4','#45B7D1','#96CEB4',
+    '#FF85A2','#A8E6CF','#DDA0DD','#87CEEB','#FFB347',
+    '#FF6EC7','#7B68EE','#00CED1','#FF4500','#32CD32'
+  ];
+
+  function Confetti(i){
+    this.el = document.createElement('div');
+    this.el.className = 'confetti';
+    this.inner = document.createElement('div');
+    this.inner.className = 'confetti-inner';
+    this.inner.style.background = COLORS[i % COLORS.length];
+    this.el.appendChild(this.inner);
+    box.appendChild(this.el);
+    this.reset(true);
+  }
+  Confetti.prototype.reset = function(scatter){
+    this.w = rand(6, 12);
+    this.h = rand(4, 10);
+    this.x = rand(-20, W + 20);
+    this.y = scatter ? rand(-H * 0.3, H * 0.8) : rand(-100, -20);
+    this.speedY = rand(1.0, 3.0);
+    this.speedX = rand(-0.5, 0.5);
+    this.windPhase = rand(0, Math.PI * 2);
+    this.windFreq = rand(0.01, 0.025);
+    this.windAmp = rand(0.5, 1.5);
+    this.rotX = rand(0, Math.PI * 2);
+    this.rotY = rand(0, Math.PI * 2);
+    this.rotZ = rand(0, Math.PI * 2);
+    this.spinX = rand(-0.05, 0.05);
+    this.spinY = rand(-0.08, 0.08);
+    this.spinZ = rand(-0.03, 0.03);
+    this.opacity = rand(0.7, 1.0);
+    this.t = rand(0, 500);
+    this.el.style.width = this.w + 'px';
+    this.el.style.height = this.h + 'px';
+    this.el.style.opacity = this.opacity;
+  };
+  Confetti.prototype.update = function(){
+    this.t++;
+    this.y += this.speedY;
+    this.x += this.speedX + Math.sin(this.t * this.windFreq + this.windPhase) * this.windAmp;
+    this.rotX += this.spinX;
+    this.rotY += this.spinY;
+    this.rotZ += this.spinZ;
+
+    this.el.style.transform =
+      'translate3d(' + this.x.toFixed(1) + 'px,' + this.y.toFixed(1) + 'px,0)' +
+      ' rotateX(' + this.rotX.toFixed(2) + 'rad)' +
+      ' rotateY(' + this.rotY.toFixed(2) + 'rad)' +
+      ' rotateZ(' + this.rotZ.toFixed(2) + 'rad)';
+
+    if(this.y > H + 40) this.reset(false);
+  };
+
+  for(var i = 0; i < COUNT; i++) pieces.push(new Confetti(i));
+
+  function frame(){
+    if(!running) return;
+    for(var i = 0; i < pieces.length; i++) pieces[i].update();
+    requestAnimationFrame(frame);
+  }
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){ running = false; } else { running = true; requestAnimationFrame(frame); }
+  });
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
