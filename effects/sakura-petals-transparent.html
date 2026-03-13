@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>唯美和风花瓣（透明背景）</title>
+<style>
+  /* ============================================================
+     全局重置 — 透明背景，可叠加到任何页面
+     ============================================================ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    background: transparent;    /* ← 透明背景，方便嵌入 */
+  }
+
+  /* ============================================================
+     花瓣容器
+     ============================================================ */
+  #sakura-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    perspective: 800px;
+  }
+
+  /* ============================================================
+     单个花瓣 —— 纯 CSS 不规则花瓣形状
+     ============================================================ */
+  .petal {
+    position: absolute;
+    top: -60px;
+    will-change: transform, opacity;
+    transform-style: preserve-3d;
+  }
+
+  .petal-shape {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+  }
+
+  /* 花瓣主体 */
+  .petal-shape::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: var(--petal-color);
+    border-radius: 70% 0% 70% 0% / 60% 0% 60% 0%;
+    box-shadow:
+      0 0 8px  var(--petal-glow),
+      0 0 20px var(--petal-glow),
+      inset 0 0 6px rgba(255, 255, 255, 0.3);
+    opacity: 0.9;
+  }
+
+  /* 花瓣脉络 */
+  .petal-shape::after {
+    content: '';
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    width: 1px;
+    height: 50%;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    transform: translateX(-50%) rotate(-5deg);
+    border-radius: 50%;
+  }
+
+  /* ============================================================
+     花瓣颜色变体
+     ============================================================ */
+  .petal.color-0 {
+    --petal-color: rgba(255, 183, 197, 0.85);
+    --petal-glow:  rgba(255, 150, 180, 0.4);
+  }
+  .petal.color-1 {
+    --petal-color: rgba(255, 210, 220, 0.80);
+    --petal-glow:  rgba(255, 190, 200, 0.35);
+  }
+  .petal.color-2 {
+    --petal-color: rgba(255, 240, 245, 0.75);
+    --petal-glow:  rgba(255, 220, 230, 0.3);
+  }
+  .petal.color-3 {
+    --petal-color: rgba(248, 170, 190, 0.88);
+    --petal-glow:  rgba(240, 140, 170, 0.45);
+  }
+  .petal.color-4 {
+    --petal-color: rgba(255, 200, 210, 0.70);
+    --petal-glow:  rgba(255, 180, 195, 0.25);
+  }
+</style>
+</head>
+<body>
+
+<!-- 花瓣渲染容器 -->
+<div id="sakura-canvas"></div>
+
+<script>
+/* ================================================================
+   🌸 唯美和风花瓣飘落 — 透明背景版
+   ================================================================
+   可直接以 iframe 叠加到任何页面上使用。
+   背景完全透明，仅渲染花瓣粒子。
+   ================================================================ */
+
+(function () {
+  'use strict';
+
+  var CONFIG = {
+    COUNT:          50,
+    MIN_SIZE:       10,
+    MAX_SIZE:       28,
+    MIN_FALL_SPEED: 0.4,
+    MAX_FALL_SPEED: 1.8,
+    WIND_AMPLITUDE: 1.2,
+    WIND_FREQUENCY: 0.008,
+    SPIN_SPEED_X:   0.015,
+    SPIN_SPEED_Y:   0.025,
+    SPIN_SPEED_Z:   0.01,
+    COLOR_VARIANTS: 5
+  };
+
+  var canvas  = document.getElementById('sakura-canvas');
+  var petals  = [];
+  var W       = window.innerWidth;
+  var H       = window.innerHeight;
+  var running = true;
+
+  function rand(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  /* ============================================================
+     Petal 类
+     ============================================================ */
+  function Petal(index) {
+    this.el = document.createElement('div');
+    this.el.className = 'petal color-' + (index % CONFIG.COLOR_VARIANTS);
+
+    var shape = document.createElement('div');
+    shape.className = 'petal-shape';
+    this.el.appendChild(shape);
+
+    canvas.appendChild(this.el);
+    this.reset(true);
+  }
+
+  Petal.prototype.reset = function (scatter) {
+    var size = rand(CONFIG.MIN_SIZE, CONFIG.MAX_SIZE);
+    this.w = size;
+    this.h = size * rand(1.1, 1.6);
+
+    this.x = rand(-40, W + 40);
+    this.y = scatter ? rand(-H * 0.3, H) : rand(-120, -30);
+
+    this.fallSpeed = rand(CONFIG.MIN_FALL_SPEED, CONFIG.MAX_FALL_SPEED);
+
+    this.windPhase = rand(0, Math.PI * 2);
+    this.windAmp   = rand(0.5, CONFIG.WIND_AMPLITUDE);
+    this.windFreq  = rand(CONFIG.WIND_FREQUENCY * 0.6, CONFIG.WIND_FREQUENCY * 1.5);
+    this.driftX    = rand(-0.3, 0.3);
+
+    this.rotX  = rand(0, Math.PI * 2);
+    this.rotY  = rand(0, Math.PI * 2);
+    this.rotZ  = rand(0, Math.PI * 2);
+    this.spinX = rand(-CONFIG.SPIN_SPEED_X, CONFIG.SPIN_SPEED_X);
+    this.spinY = rand(-CONFIG.SPIN_SPEED_Y, CONFIG.SPIN_SPEED_Y);
+    this.spinZ = rand(-CONFIG.SPIN_SPEED_Z, CONFIG.SPIN_SPEED_Z);
+
+    this.opacity = rand(0.4, 0.95);
+
+    this.el.style.width   = this.w + 'px';
+    this.el.style.height  = this.h + 'px';
+    this.el.style.opacity = this.opacity;
+
+    this.t = rand(0, 1000);
+  };
+
+  Petal.prototype.update = function () {
+    this.t += 1;
+
+    /* 重力下落 */
+    this.y += this.fallSpeed;
+
+    /* 正弦波微风 */
+    var windOffset = Math.sin(this.t * this.windFreq + this.windPhase) * this.windAmp;
+    this.x += windOffset + this.driftX;
+
+    /* 3D 翻转 */
+    this.rotX += this.spinX;
+    this.rotY += this.spinY;
+    this.rotZ += this.spinZ;
+
+    /* GPU 加速 transform */
+    this.el.style.transform =
+      'translate3d(' + this.x.toFixed(1) + 'px,' +
+                       this.y.toFixed(1) + 'px, 0)' +
+      ' rotateX(' + this.rotX.toFixed(2) + 'rad)' +
+      ' rotateY(' + this.rotY.toFixed(2) + 'rad)' +
+      ' rotateZ(' + this.rotZ.toFixed(2) + 'rad)';
+
+    /* 出界回收 → 顶部重生 */
+    if (this.y > H + 60 || this.x < -80 || this.x > W + 80) {
+      this.reset(false);
+    }
+  };
+
+  /* ============================================================
+     初始化 & 主循环
+     ============================================================ */
+  function init() {
+    for (var i = 0; i < CONFIG.COUNT; i++) {
+      petals.push(new Petal(i));
+    }
+  }
+
+  function frame() {
+    if (!running) return;
+    for (var i = 0; i < petals.length; i++) {
+      petals[i].update();
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* 窗口自适应 */
+  window.addEventListener('resize', function () {
+    W = window.innerWidth;
+    H = window.innerHeight;
+  });
+
+  /* 标签页不可见时暂停 */
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      running = false;
+    } else {
+      running = true;
+      requestAnimationFrame(frame);
+    }
+  });
+
+  /* 🚀 启动 */
+  init();
+  requestAnimationFrame(frame);
+
+})();
+</script>
+</body>
+</html>
