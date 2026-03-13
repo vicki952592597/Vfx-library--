@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大神App - 排行榜动效</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    padding: 40px 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+.demo-box { text-align: center; }
+.demo-box h3 {
+    color: rgba(255,255,255,0.6);
+    font-size: 12px;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+}
+
+/* 排行榜卡片 */
+.fx-rank-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #2a2a45 0%, #1a1a30 100%);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+    min-width: 280px;
+}
+.fx-rank-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,215,0,0.1), transparent);
+    transition: left 0.5s;
+}
+.fx-rank-card:hover::before { left: 100%; }
+.fx-rank-card:hover {
+    transform: translateX(5px);
+    border-color: rgba(255,215,0,0.3);
+}
+.fx-rank-card.active {
+    border-color: #FFD700;
+    box-shadow: 0 0 25px rgba(255,215,0,0.3);
+}
+.rank-badge {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 15px;
+    color: #333;
+}
+.rank-avatar { font-size: 32px; }
+.rank-info { flex: 1; text-align: left; }
+.rank-name { font-weight: 600; font-size: 15px; color: #fff; }
+.rank-score { font-size: 13px; color: #FFD700; margin-top: 3px; }
+.rank-crown {
+    font-size: 24px;
+    animation: crown-float 2s ease-in-out infinite;
+}
+@keyframes crown-float {
+    0%, 100% { transform: translateY(0) rotate(-5deg); }
+    50% { transform: translateY(-6px) rotate(5deg); }
+}
+
+/* 排行榜列表入场 */
+.fx-rank-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 280px;
+}
+.fx-rank-list .rank-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 18px;
+    background: #2a2a45;
+    border-radius: 10px;
+    opacity: 0;
+    transform: translateX(-25px);
+    animation: rank-slide-in 0.5s ease-out forwards;
+    animation-delay: calc(var(--delay) * 0.15s);
+}
+@keyframes rank-slide-in {
+    to { opacity: 1; transform: translateX(0); }
+}
+.fx-rank-list .rank-pos {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+}
+.fx-rank-list .rank-pos.gold {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #333;
+}
+.fx-rank-list .rank-pos.silver {
+    background: linear-gradient(135deg, #C0C0C0, #E8E8E8);
+    color: #333;
+}
+.fx-rank-list .rank-pos.bronze {
+    background: linear-gradient(135deg, #CD7F32, #E5A55D);
+    color: #333;
+}
+.fx-rank-list .rank-game { flex: 1; font-size: 14px; color: #fff; }
+.fx-rank-list .rank-pts { font-size: 14px; font-weight: 600; color: #FF6B2C; }
+
+/* 排名变化 */
+.rank-changes {
+    display: flex;
+    gap: 20px;
+}
+.fx-rank-change {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 15px;
+}
+.fx-rank-change.up {
+    background: rgba(82,196,26,0.15);
+    color: #52C41A;
+}
+.fx-rank-change.up .arrow { animation: arrow-up 1s ease-in-out infinite; }
+@keyframes arrow-up {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+.fx-rank-change.down {
+    background: rgba(255,77,79,0.15);
+    color: #FF4D4F;
+}
+.fx-rank-change.down .arrow { animation: arrow-down 1s ease-in-out infinite; }
+@keyframes arrow-down {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(5px); }
+}
+.fx-rank-change.new {
+    background: linear-gradient(135deg, rgba(255,107,44,0.2), rgba(255,215,0,0.2));
+}
+.fx-rank-change .new-tag {
+    background: linear-gradient(135deg, #FF6B2C, #FFD700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: new-pulse 1.5s ease-in-out infinite;
+}
+@keyframes new-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* 热门标签 */
+.fx-hot-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    background: linear-gradient(135deg, rgba(255,69,0,0.2), rgba(255,140,0,0.2));
+    border: 1px solid rgba(255,107,44,0.3);
+    border-radius: 20px;
+}
+.fx-hot-badge .fire { animation: fire-dance 0.5s ease-in-out infinite alternate; }
+@keyframes fire-dance {
+    from { transform: scale(1) rotate(-5deg); }
+    to { transform: scale(1.15) rotate(5deg); }
+}
+.fx-hot-badge .text { font-size: 13px; font-weight: 600; color: #FF6B2C; }
+
+/* 奖杯闪烁 */
+.fx-trophy {
+    font-size: 60px;
+    animation: trophy-shine 2s ease-in-out infinite;
+}
+@keyframes trophy-shine {
+    0%, 100% { filter: brightness(1) drop-shadow(0 0 0 transparent); }
+    50% { filter: brightness(1.4) drop-shadow(0 0 20px rgba(255,215,0,0.7)); }
+}
+</style>
+</head>
+<body>
+
+<div class="demo-box">
+    <h3>🏆 排行榜卡片（点击/悬浮）</h3>
+    <div class="fx-rank-card" onclick="this.classList.toggle('active')">
+        <div class="rank-badge">1</div>
+        <div class="rank-avatar">🎮</div>
+        <div class="rank-info">
+            <div class="rank-name">王者玩家</div>
+            <div class="rank-score">9.8分</div>
+        </div>
+        <div class="rank-crown">👑</div>
+    </div>
+</div>
+
+<div class="demo-box">
+    <h3>📋 列表入场动画</h3>
+    <div class="fx-rank-list">
+        <div class="rank-item" style="--delay: 0">
+            <span class="rank-pos gold">1</span>
+            <span class="rank-game">原神</span>
+            <span class="rank-pts">9.6</span>
+        </div>
+        <div class="rank-item" style="--delay: 1">
+            <span class="rank-pos silver">2</span>
+            <span class="rank-game">王者荣耀</span>
+            <span class="rank-pts">9.4</span>
+        </div>
+        <div class="rank-item" style="--delay: 2">
+            <span class="rank-pos bronze">3</span>
+            <span class="rank-game">和平精英</span>
+            <span class="rank-pts">9.2</span>
+        </div>
+    </div>
+</div>
+
+<div class="demo-box">
+    <h3>📈 排名变化</h3>
+    <div class="rank-changes">
+        <div class="fx-rank-change up"><span class="arrow">↑</span><span>12</span></div>
+        <div class="fx-rank-change down"><span class="arrow">↓</span><span>5</span></div>
+        <div class="fx-rank-change new"><span class="new-tag">NEW</span></div>
+    </div>
+</div>
+
+<div class="demo-box">
+    <h3>🔥 热门标签 &amp; 🏆 奖杯闪烁</h3>
+    <div style="display:flex;gap:30px;align-items:center">
+        <div class="fx-hot-badge"><span class="fire">🔥</span><span class="text">热门</span></div>
+        <div class="fx-trophy">🏆</div>
+    </div>
+</div>
+
+</body>
+</html>

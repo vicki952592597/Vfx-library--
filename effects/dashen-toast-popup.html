@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大神App - Toast提示与弹窗动效</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    padding: 40px 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+.demo-box { text-align: center; }
+.demo-box h3 {
+    color: rgba(255,255,255,0.6);
+    font-size: 12px;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+}
+.btn {
+    padding: 12px 28px;
+    font-size: 14px;
+    color: #fff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin: 0 8px;
+}
+.btn:hover {
+    box-shadow: 0 0 20px rgba(102,126,234,0.5);
+    transform: translateY(-2px);
+}
+
+/* Toast */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.fx-toast {
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateY(-30px);
+    opacity: 0;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.fx-toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+.fx-toast.success {
+    background: linear-gradient(135deg, #52C41A 0%, #73d13d 100%);
+    box-shadow: 0 6px 25px rgba(82,196,26,0.4);
+}
+.fx-toast.error {
+    background: linear-gradient(135deg, #FF4D4F 0%, #ff7875 100%);
+    box-shadow: 0 6px 25px rgba(255,77,79,0.4);
+}
+.fx-toast.error.shake {
+    animation: shake 0.5s ease-in-out;
+}
+@keyframes shake {
+    0%, 100% { transform: translateX(0) translateY(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px) translateY(0); }
+    20%, 40%, 60%, 80% { transform: translateX(10px) translateY(0); }
+}
+
+/* 奖励弹窗 */
+.fx-reward-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+.fx-reward-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+.fx-reward-box {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    padding: 50px 70px;
+    border-radius: 24px;
+    text-align: center;
+    transform: scale(0);
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 0 20px 60px rgba(255,165,0,0.4);
+}
+.fx-reward-overlay.show .fx-reward-box {
+    transform: scale(1);
+}
+.fx-reward-coin {
+    font-size: 80px;
+    animation: coin-bounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+}
+@keyframes coin-bounce {
+    0%, 100% { transform: translateY(0) rotate(-5deg); }
+    50% { transform: translateY(-25px) rotate(5deg); }
+}
+.fx-reward-text {
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+    margin-top: 20px;
+}
+.fx-reward-sub {
+    font-size: 14px;
+    color: rgba(0,0,0,0.5);
+    margin-top: 8px;
+}
+</style>
+</head>
+<body>
+
+<div class="demo-box">
+    <h3>点击按钮查看Toast效果</h3>
+    <button class="btn" onclick="showToast('success')">✓ 成功提示</button>
+    <button class="btn" onclick="showToast('error')">✕ 错误提示</button>
+</div>
+
+<div class="demo-box">
+    <h3>点击按钮查看奖励弹窗</h3>
+    <button class="btn" onclick="showReward()">🎁 领取奖励</button>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="fx-reward-overlay" id="rewardOverlay" onclick="this.classList.remove('show')">
+    <div class="fx-reward-box" onclick="event.stopPropagation()">
+        <div class="fx-reward-coin">🪙</div>
+        <div class="fx-reward-text">+100 金币</div>
+        <div class="fx-reward-sub">点击任意位置关闭</div>
+    </div>
+</div>
+
+<script>
+function showToast(type) {
+    var container = document.getElementById('toastContainer');
+    var toast = document.createElement('div');
+    toast.className = 'fx-toast ' + type;
+    
+    if (type === 'success') {
+        toast.innerHTML = '✓ 操作成功！';
+    } else {
+        toast.innerHTML = '✕ 操作失败，请重试！';
+    }
+    
+    container.appendChild(toast);
+    
+    setTimeout(function() { toast.classList.add('show'); }, 10);
+    
+    if (type === 'error') {
+        setTimeout(function() { toast.classList.add('shake'); }, 350);
+    }
+    
+    setTimeout(function() {
+        toast.classList.remove('show');
+        setTimeout(function() { toast.remove(); }, 350);
+    }, 2500);
+}
+
+function showReward() {
+    var overlay = document.getElementById('rewardOverlay');
+    overlay.classList.add('show');
+    
+    setTimeout(function() {
+        overlay.classList.remove('show');
+    }, 3500);
+}
+</script>
+</body>
+</html>

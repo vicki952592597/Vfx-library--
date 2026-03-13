@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大神App - 按钮动效集</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+    padding: 40px 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+.demo-box { text-align: center; }
+.demo-box h3 {
+    color: rgba(255,255,255,0.6);
+    font-size: 12px;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+}
+
+/* 涟漪按钮 */
+.fx-btn-ripple {
+    position: relative;
+    padding: 14px 32px;
+    font-size: 15px;
+    color: #fff;
+    background: linear-gradient(135deg, #FF6B2C 0%, #FF8F5C 100%);
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.15s;
+}
+.fx-btn-ripple:active { transform: scale(0.95); }
+.fx-btn-ripple .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+    transform: scale(0);
+    animation: ripple 0.6s linear;
+    pointer-events: none;
+}
+@keyframes ripple {
+    to { transform: scale(4); opacity: 0; }
+}
+
+/* 发光按钮 */
+.fx-btn-glow {
+    padding: 14px 32px;
+    font-size: 15px;
+    color: #fff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.fx-btn-glow:hover {
+    box-shadow: 0 0 20px rgba(102,126,234,0.6), 0 0 40px rgba(102,126,234,0.4);
+    transform: translateY(-2px);
+}
+
+/* 弹跳按钮 */
+.fx-btn-bounce {
+    padding: 14px 32px;
+    font-size: 15px;
+    color: #fff;
+    background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+.fx-btn-bounce:hover { transform: scale(1.05); }
+.fx-btn-bounce:active { animation: bounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+@keyframes bounce {
+    0% { transform: scale(1); }
+    30% { transform: scale(0.9); }
+    50% { transform: scale(1.1); }
+    70% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}
+
+/* 渐变流光 */
+.fx-btn-gradient {
+    padding: 14px 32px;
+    font-size: 15px;
+    color: #fff;
+    background: linear-gradient(90deg, #FF6B2C, #FF8F5C, #FFD700, #FF8F5C, #FF6B2C);
+    background-size: 300% 100%;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    animation: gradient-flow 3s ease infinite;
+}
+@keyframes gradient-flow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+</style>
+</head>
+<body>
+
+<div class="demo-box">
+    <h3>🌊 涟漪按钮（点击看效果）</h3>
+    <button class="fx-btn-ripple" id="rippleBtn">点击我</button>
+</div>
+
+<div class="demo-box">
+    <h3>✨ 发光按钮（悬浮看效果）</h3>
+    <button class="fx-btn-glow">悬浮发光</button>
+</div>
+
+<div class="demo-box">
+    <h3>🎯 弹跳按钮（点击看效果）</h3>
+    <button class="fx-btn-bounce">弹跳效果</button>
+</div>
+
+<div class="demo-box">
+    <h3>🌈 渐变流光按钮</h3>
+    <button class="fx-btn-gradient">流光效果</button>
+</div>
+
+<script>
+document.getElementById('rippleBtn').addEventListener('click', function(e) {
+    var ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    var rect = this.getBoundingClientRect();
+    var size = Math.max(rect.width, rect.height);
+    ripple.style.width = ripple.style.height = size + 'px';
+    ripple.style.left = (e.clientX - rect.left - size/2) + 'px';
+    ripple.style.top = (e.clientY - rect.top - size/2) + 'px';
+    this.appendChild(ripple);
+    setTimeout(function() { ripple.remove(); }, 600);
+});
+</script>
+</body>
+</html>

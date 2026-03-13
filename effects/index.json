@@ -53,6 +53,10 @@
   { "name": "星星坠落",         "cat": "透明叠加层", "file": "falling-stars.html",       "icon": "⭐", "author": "FX Lab" },
   { "name": "拖尾流星",         "cat": "透明叠加层", "file": "meteor-shower.html",       "icon": "☄️", "author": "FX Lab" },
 
-  { "name": "评分星级动效集",   "cat": "大神适用-UI动效", "file": "dashen-star-rating.html",  "icon": "⭐", "author": "大神App" },
-  { "name": "点赞收藏动效集",   "cat": "大神适用-UI动效", "file": "dashen-like-buttons.html", "icon": "❤️", "author": "大神App" }
+  { "name": "评分星级动效集",   "cat": "大神适用-UI动效", "file": "dashen-star-rating.html",    "icon": "⭐", "author": "大神App" },
+  { "name": "点赞收藏动效集",   "cat": "大神适用-UI动效", "file": "dashen-like-buttons.html",   "icon": "❤️", "author": "大神App" },
+  { "name": "按钮动效集",       "cat": "大神适用-UI动效", "file": "dashen-buttons.html",        "icon": "🔘", "author": "大神App" },
+  { "name": "加载动效集",       "cat": "大神适用-UI动效", "file": "dashen-loading.html",        "icon": "⏳", "author": "大神App" },
+  { "name": "排行榜动效集",     "cat": "大神适用-UI动效", "file": "dashen-ranking.html",        "icon": "🏆", "author": "大神App" },
+  { "name": "Toast与弹窗动效",  "cat": "大神适用-UI动效", "file": "dashen-toast-popup.html",    "icon": "💬", "author": "大神App" }
 ]
