@@ -24,23 +24,32 @@ body {
     margin-bottom: 16px;
     letter-spacing: 1px;
 }
+.btn-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
 .btn {
-    padding: 12px 28px;
-    font-size: 14px;
+    padding: 12px 24px;
+    font-size: 13px;
     color: #fff;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border: none;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s;
-    margin: 0 8px;
 }
 .btn:hover {
     box-shadow: 0 0 20px rgba(102,126,234,0.5);
     transform: translateY(-2px);
 }
+.btn.orange { background: linear-gradient(135deg, #FF6B2C 0%, #FF8F5C 100%); }
+.btn.green { background: linear-gradient(135deg, #52C41A 0%, #73d13d 100%); }
+.btn.red { background: linear-gradient(135deg, #FF4D4F 0%, #ff7875 100%); }
+.btn.gold { background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #333; }
 
-/* Toast */
+/* ========== Toast 提示 ========== */
 .toast-container {
     position: fixed;
     top: 20px;
@@ -51,6 +60,8 @@ body {
     flex-direction: column;
     gap: 10px;
 }
+
+/* Toast 基础样式 */
 .fx-toast {
     padding: 14px 28px;
     border-radius: 10px;
@@ -60,14 +71,44 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    transform: translateY(-30px);
     opacity: 0;
+    pointer-events: none;
+}
+
+/* Toast 样式1: 顶部滑入 */
+.fx-toast.slide-down {
+    transform: translateY(-30px);
     transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.fx-toast.show {
+.fx-toast.slide-down.show {
     transform: translateY(0);
     opacity: 1;
+    pointer-events: auto;
 }
+
+/* Toast 样式2: 缩放弹出 */
+.fx-toast.scale-pop {
+    transform: scale(0.5);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.fx-toast.scale-pop.show {
+    transform: scale(1);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Toast 样式3: 左侧滑入 */
+.fx-toast.slide-right {
+    transform: translateX(-100px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.fx-toast.slide-right.show {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Toast 颜色 */
 .fx-toast.success {
     background: linear-gradient(135deg, #52C41A 0%, #73d13d 100%);
     box-shadow: 0 6px 25px rgba(82,196,26,0.4);
@@ -76,17 +117,28 @@ body {
     background: linear-gradient(135deg, #FF4D4F 0%, #ff7875 100%);
     box-shadow: 0 6px 25px rgba(255,77,79,0.4);
 }
-.fx-toast.error.shake {
+.fx-toast.warning {
+    background: linear-gradient(135deg, #FAAD14 0%, #ffc53d 100%);
+    box-shadow: 0 6px 25px rgba(250,173,20,0.4);
+    color: #333;
+}
+.fx-toast.info {
+    background: linear-gradient(135deg, #1890FF 0%, #40a9ff 100%);
+    box-shadow: 0 6px 25px rgba(24,144,255,0.4);
+}
+
+/* 抖动效果 */
+.fx-toast.shake {
     animation: shake 0.5s ease-in-out;
 }
 @keyframes shake {
-    0%, 100% { transform: translateX(0) translateY(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px) translateY(0); }
-    20%, 40%, 60%, 80% { transform: translateX(10px) translateY(0); }
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+    20%, 40%, 60%, 80% { transform: translateX(8px); }
 }
 
-/* 奖励弹窗 */
-.fx-reward-overlay {
+/* ========== 弹窗/Modal ========== */
+.fx-modal-overlay {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
@@ -99,21 +151,116 @@ body {
     pointer-events: none;
     transition: opacity 0.3s;
 }
-.fx-reward-overlay.show {
+.fx-modal-overlay.show {
     opacity: 1;
     pointer-events: auto;
 }
+
+/* 弹窗样式1: 缩放弹出 */
+.fx-modal.scale-bounce {
+    background: linear-gradient(135deg, #2a2a45 0%, #1a1a30 100%);
+    padding: 40px 50px;
+    border-radius: 20px;
+    text-align: center;
+    transform: scale(0);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.fx-modal-overlay.show .fx-modal.scale-bounce {
+    transform: scale(1);
+}
+
+/* 弹窗样式2: 底部滑入 */
+.fx-modal.slide-up {
+    background: linear-gradient(135deg, #2a2a45 0%, #1a1a30 100%);
+    padding: 40px 50px;
+    border-radius: 20px;
+    text-align: center;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.fx-modal-overlay.show .fx-modal.slide-up {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* 弹窗样式3: 翻转进入 */
+.fx-modal.flip-in {
+    background: linear-gradient(135deg, #2a2a45 0%, #1a1a30 100%);
+    padding: 40px 50px;
+    border-radius: 20px;
+    text-align: center;
+    transform: perspective(600px) rotateX(-90deg);
+    opacity: 0;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.fx-modal-overlay.show .fx-modal.flip-in {
+    transform: perspective(600px) rotateX(0);
+    opacity: 1;
+}
+
+/* 弹窗样式4: 淡入放大 */
+.fx-modal.fade-scale {
+    background: linear-gradient(135deg, #2a2a45 0%, #1a1a30 100%);
+    padding: 40px 50px;
+    border-radius: 20px;
+    text-align: center;
+    transform: scale(1.2);
+    opacity: 0;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.fx-modal-overlay.show .fx-modal.fade-scale {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* 弹窗内容样式 */
+.modal-icon {
+    font-size: 60px;
+    margin-bottom: 16px;
+}
+.modal-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 10px;
+}
+.modal-desc {
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 24px;
+}
+.modal-btn {
+    padding: 12px 40px;
+    font-size: 14px;
+    color: #fff;
+    background: linear-gradient(135deg, #FF6B2C 0%, #FF8F5C 100%);
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.modal-btn:hover {
+    box-shadow: 0 0 20px rgba(255,107,44,0.5);
+    transform: translateY(-2px);
+}
+
+/* ========== 奖励弹窗 ========== */
 .fx-reward-box {
     background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
     padding: 50px 70px;
     border-radius: 24px;
     text-align: center;
-    transform: scale(0);
-    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    transform: scale(0) rotate(-10deg);
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     box-shadow: 0 20px 60px rgba(255,165,0,0.4);
 }
-.fx-reward-overlay.show .fx-reward-box {
-    transform: scale(1);
+.fx-modal-overlay.show .fx-reward-box {
+    transform: scale(1) rotate(0);
 }
 .fx-reward-coin {
     font-size: 80px;
@@ -130,28 +277,213 @@ body {
     margin-top: 20px;
 }
 .fx-reward-sub {
-    font-size: 14px;
+    font-size: 13px;
     color: rgba(0,0,0,0.5);
     margin-top: 8px;
+}
+
+/* ========== 确认弹窗 ========== */
+.fx-confirm-box {
+    background: linear-gradient(135deg, #2a2a45 0%, #1a1a30 100%);
+    padding: 35px 45px;
+    border-radius: 20px;
+    text-align: center;
+    transform: scale(0);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1px solid rgba(255,255,255,0.1);
+    min-width: 320px;
+}
+.fx-modal-overlay.show .fx-confirm-box {
+    transform: scale(1);
+}
+.confirm-icon {
+    font-size: 50px;
+    margin-bottom: 16px;
+}
+.confirm-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 8px;
+}
+.confirm-desc {
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 24px;
+}
+.confirm-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+.confirm-btn {
+    padding: 10px 30px;
+    font-size: 14px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.confirm-btn.cancel {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
+.confirm-btn.cancel:hover {
+    background: rgba(255,255,255,0.2);
+}
+.confirm-btn.ok {
+    background: linear-gradient(135deg, #FF6B2C 0%, #FF8F5C 100%);
+    color: #fff;
+}
+.confirm-btn.ok:hover {
+    box-shadow: 0 0 15px rgba(255,107,44,0.5);
+}
+
+/* ========== 底部弹出面板 ========== */
+.fx-bottom-sheet-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+.fx-bottom-sheet-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+.fx-bottom-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(180deg, #2a2a45 0%, #1a1a30 100%);
+    border-radius: 20px 20px 0 0;
+    padding: 20px;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2001;
+}
+.fx-bottom-sheet-overlay.show + .fx-bottom-sheet,
+.fx-bottom-sheet.show {
+    transform: translateY(0);
+}
+.sheet-handle {
+    width: 40px;
+    height: 4px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 2px;
+    margin: 0 auto 20px;
+}
+.sheet-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 20px;
+}
+.sheet-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.sheet-option {
+    padding: 14px 20px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    color: #fff;
+    font-size: 15px;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+}
+.sheet-option:hover {
+    background: rgba(255,255,255,0.1);
+}
+.sheet-option.danger {
+    color: #FF4D4F;
 }
 </style>
 </head>
 <body>
 
 <div class="demo-box">
-    <h3>点击按钮查看Toast效果</h3>
-    <button class="btn" onclick="showToast('success')">✓ 成功提示</button>
-    <button class="btn" onclick="showToast('error')">✕ 错误提示</button>
+    <h3>🔔 Toast提示（多种动画）</h3>
+    <div class="btn-row">
+        <button class="btn green" onclick="showToast('success', 'slide-down')">✓ 成功-滑入</button>
+        <button class="btn red" onclick="showToast('error', 'scale-pop')">✕ 错误-弹出</button>
+        <button class="btn orange" onclick="showToast('warning', 'slide-right')">⚠ 警告-侧滑</button>
+        <button class="btn" onclick="showToast('info', 'slide-down')">ℹ 信息-滑入</button>
+    </div>
 </div>
 
 <div class="demo-box">
-    <h3>点击按钮查看奖励弹窗</h3>
-    <button class="btn" onclick="showReward()">🎁 领取奖励</button>
+    <h3>📦 Modal弹窗（多种进入方式）</h3>
+    <div class="btn-row">
+        <button class="btn" onclick="showModal('modal1')">缩放弹出</button>
+        <button class="btn orange" onclick="showModal('modal2')">底部滑入</button>
+        <button class="btn green" onclick="showModal('modal3')">3D翻转</button>
+        <button class="btn red" onclick="showModal('modal4')">淡入放大</button>
+    </div>
 </div>
 
+<div class="demo-box">
+    <h3>🎁 特殊弹窗</h3>
+    <div class="btn-row">
+        <button class="btn gold" onclick="showModal('reward')">🪙 奖励弹窗</button>
+        <button class="btn" onclick="showModal('confirm')">❓ 确认对话框</button>
+        <button class="btn orange" onclick="showBottomSheet()">📋 底部面板</button>
+    </div>
+</div>
+
+<!-- Toast容器 -->
 <div class="toast-container" id="toastContainer"></div>
 
-<div class="fx-reward-overlay" id="rewardOverlay" onclick="this.classList.remove('show')">
+<!-- Modal 1: 缩放弹出 -->
+<div class="fx-modal-overlay" id="modal1" onclick="closeModal('modal1')">
+    <div class="fx-modal scale-bounce" onclick="event.stopPropagation()">
+        <div class="modal-icon">🎮</div>
+        <div class="modal-title">缩放弹出效果</div>
+        <div class="modal-desc">使用弹性曲线实现Q弹的缩放动画</div>
+        <button class="modal-btn" onclick="closeModal('modal1')">知道了</button>
+    </div>
+</div>
+
+<!-- Modal 2: 底部滑入 -->
+<div class="fx-modal-overlay" id="modal2" onclick="closeModal('modal2')">
+    <div class="fx-modal slide-up" onclick="event.stopPropagation()">
+        <div class="modal-icon">🚀</div>
+        <div class="modal-title">底部滑入效果</div>
+        <div class="modal-desc">从下方平滑滑入，适合移动端</div>
+        <button class="modal-btn" onclick="closeModal('modal2')">知道了</button>
+    </div>
+</div>
+
+<!-- Modal 3: 3D翻转 -->
+<div class="fx-modal-overlay" id="modal3" onclick="closeModal('modal3')">
+    <div class="fx-modal flip-in" onclick="event.stopPropagation()">
+        <div class="modal-icon">🎯</div>
+        <div class="modal-title">3D翻转效果</div>
+        <div class="modal-desc">透视翻转进入，科技感十足</div>
+        <button class="modal-btn" onclick="closeModal('modal3')">知道了</button>
+    </div>
+</div>
+
+<!-- Modal 4: 淡入放大 -->
+<div class="fx-modal-overlay" id="modal4" onclick="closeModal('modal4')">
+    <div class="fx-modal fade-scale" onclick="event.stopPropagation()">
+        <div class="modal-icon">✨</div>
+        <div class="modal-title">淡入放大效果</div>
+        <div class="modal-desc">从大到小淡入，优雅简洁</div>
+        <button class="modal-btn" onclick="closeModal('modal4')">知道了</button>
+    </div>
+</div>
+
+<!-- 奖励弹窗 -->
+<div class="fx-modal-overlay" id="reward" onclick="closeModal('reward')">
     <div class="fx-reward-box" onclick="event.stopPropagation()">
         <div class="fx-reward-coin">🪙</div>
         <div class="fx-reward-text">+100 金币</div>
@@ -159,39 +491,72 @@ body {
     </div>
 </div>
 
+<!-- 确认对话框 -->
+<div class="fx-modal-overlay" id="confirm" onclick="closeModal('confirm')">
+    <div class="fx-confirm-box" onclick="event.stopPropagation()">
+        <div class="confirm-icon">🗑️</div>
+        <div class="confirm-title">确定要删除吗？</div>
+        <div class="confirm-desc">删除后将无法恢复，请谨慎操作</div>
+        <div class="confirm-btns">
+            <button class="confirm-btn cancel" onclick="closeModal('confirm')">取消</button>
+            <button class="confirm-btn ok" onclick="closeModal('confirm')">确定</button>
+        </div>
+    </div>
+</div>
+
+<!-- 底部面板 -->
+<div class="fx-bottom-sheet-overlay" id="bottomSheetOverlay" onclick="closeBottomSheet()"></div>
+<div class="fx-bottom-sheet" id="bottomSheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">选择操作</div>
+    <div class="sheet-options">
+        <button class="sheet-option" onclick="closeBottomSheet()">📷 拍照</button>
+        <button class="sheet-option" onclick="closeBottomSheet()">🖼️ 从相册选择</button>
+        <button class="sheet-option" onclick="closeBottomSheet()">📁 从文件选择</button>
+        <button class="sheet-option danger" onclick="closeBottomSheet()">取消</button>
+    </div>
+</div>
+
 <script>
-function showToast(type) {
+// Toast
+function showToast(type, animation) {
     var container = document.getElementById('toastContainer');
     var toast = document.createElement('div');
-    toast.className = 'fx-toast ' + type;
+    toast.className = 'fx-toast ' + type + ' ' + animation;
     
-    if (type === 'success') {
-        toast.innerHTML = '✓ 操作成功！';
-    } else {
-        toast.innerHTML = '✕ 操作失败，请重试！';
-    }
+    var icons = { success: '✓', error: '✕', warning: '⚠', info: 'ℹ' };
+    var texts = { success: '操作成功！', error: '操作失败！', warning: '请注意！', info: '提示信息' };
+    toast.innerHTML = icons[type] + ' ' + texts[type];
     
     container.appendChild(toast);
-    
     setTimeout(function() { toast.classList.add('show'); }, 10);
     
     if (type === 'error') {
-        setTimeout(function() { toast.classList.add('shake'); }, 350);
+        setTimeout(function() { toast.classList.add('shake'); }, 400);
     }
     
     setTimeout(function() {
         toast.classList.remove('show');
-        setTimeout(function() { toast.remove(); }, 350);
+        setTimeout(function() { toast.remove(); }, 400);
     }, 2500);
 }
 
-function showReward() {
-    var overlay = document.getElementById('rewardOverlay');
-    overlay.classList.add('show');
-    
-    setTimeout(function() {
-        overlay.classList.remove('show');
-    }, 3500);
+// Modal
+function showModal(id) {
+    document.getElementById(id).classList.add('show');
+}
+function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
+}
+
+// Bottom Sheet
+function showBottomSheet() {
+    document.getElementById('bottomSheetOverlay').classList.add('show');
+    document.getElementById('bottomSheet').classList.add('show');
+}
+function closeBottomSheet() {
+    document.getElementById('bottomSheetOverlay').classList.remove('show');
+    document.getElementById('bottomSheet').classList.remove('show');
 }
 </script>
 </body>
