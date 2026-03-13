@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Left-Directional Fast Snow Effect</title>
+  <style>
+    /* 去除浏览器默认边距，设置纯黑背景，隐藏溢出的滚动条 */
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #000000; 
+    }
+    
+    /* 确保画布完全填满整个屏幕窗口 */
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 纯净画布，无任何多余文字 -->
+  <canvas id="snowCanvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('snowCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // 初始化画布大小
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+
+    // 监听窗口大小改变，动态调整画布以防拉伸变形
+    window.addEventListener('resize', () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+    });
+
+    const snowflakes = [];
+    const count = 350; // 屏幕上的雪花总数量
+
+    // 生成雪花初始数据
+    for (let i = 0; i < count; i++) {
+      snowflakes.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: Math.random() * 1.5 + 0.5, // 细小的雪花 (0.5 到 2.0)
+        speed: Math.random() * 3 + 3,      // 向下的基础速度 (变快: 3 到 6)
+        
+        // 👈 【改成向左下角飞】：将 wind 设置为负数！
+        // 产生 -1.5 到 -3.5 之间的横向速度，即向左猛吹
+        wind: -(Math.random() * 2 + 1.5)      
+      });
+    }
+
+    // 绘制与更新动画的循环函数
+    function animate() {
+      // 清空上一帧的画面
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'; // 雪花颜色设置为带点透明的白色
+      ctx.beginPath();
+
+      // 第一步：画出所有雪花
+      for (let i = 0; i < count; i++) {
+        const p = snowflakes[i];
+        ctx.moveTo(p.x, p.y);
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2, true);
+      }
+      ctx.fill();
+
+      // 第二步：更新雪花位置，为下一帧做准备
+      for (let i = 0; i < count; i++) {
+        const p = snowflakes[i];
+        p.y += p.speed; // 往下掉
+        p.x += p.wind;  // 往左飘
+
+        // 边界判断 1：如果雪花掉出了屏幕最下方，让它从顶端重新出现
+        if (p.y > height) {
+          p.y = -10; // 放在屏幕上面一点点，避免突然闪现
+          p.x = Math.random() * width;
+        }
+        
+        // 边界判断 2：【关键】如果雪花向左飞出了屏幕左侧边界 (x < 0)
+        // 就让它从屏幕右侧重新出现，保证画面里一直有雪花
+        if (p.x < 0) {
+          p.x = width + 10;
+          p.y = Math.random() * height;
+        }
+      }
+
+      // 请求浏览器刷新下一帧，形成持续动画
+      requestAnimationFrame(animate);
+    }
+
+    // 启动动画
+    animate();
+  </script>
+</body>
+</html>
