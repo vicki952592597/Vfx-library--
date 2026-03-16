@@ -4,7 +4,6 @@
   { "name": "星尘雾气",         "cat": "环境与氛围", "file": "stardust-fog.html",        "icon": "✨", "author": "FX Lab" },
   { "name": "体积光柱",         "cat": "环境与氛围", "file": "volumetric-light.html",    "icon": "💡", "author": "FX Lab" },
   { "name": "星际穿越",         "cat": "环境与氛围", "file": "star-warp.html",           "icon": "🚀", "author": "FX Lab" },
-  { "name": "彩花粒子爆发",     "cat": "环境与氛围", "file": "launch-cta-burst.html",   "icon": "🎆", "author": "FX Lab" },
   { "name": "纸屑射击",         "cat": "环境与氛围", "file": "confetti-shooter.html",    "icon": "🎊", "author": "FX Lab" },
   { "name": "烟花绽放",         "cat": "环境与氛围", "file": "fireworks.html",           "icon": "🎇", "author": "FX Lab" },
   { "name": "乡村烟花",         "cat": "环境与氛围", "file": "fireworks-countryside.html","icon": "🌃", "author": "FX Lab" },
