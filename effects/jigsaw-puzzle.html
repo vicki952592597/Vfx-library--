@@ -7,7 +7,7 @@
     <style>
 body {
             font-family: Arial, Helvetica, "Liberation Sans", FreeSans, sans-serif;
-            background-color: #fff;
+            background-color: #000;
             margin: 0;
             padding: 0;
             border-width: 0;
@@ -62,7 +62,7 @@ body {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: #ffffdd;
+            background-color: #000000;
             overflow: hidden;
         }
 
@@ -78,7 +78,7 @@ body {
             z-index: 100;
             /* above #menu */
             display: none;
-            background-color: #ffffee99;
+            background-color: #000000ee;
         }
 
         .showimage img {
@@ -98,25 +98,25 @@ body {
   <body>
   <div id=forPuzzle></div>
     <div id="menu">
-        <p id="controls">close controls</p>
+        <p id="controls">关闭控制面板</p>
         <div id="showhide">
             <hr>
-            <p class="center"><button type="button" id="help">instructions</button></p>
+            <p class="center"><button type="button" id="help">游戏说明</button></p>
             <hr>
             <p class="center">
-                <button type="button" id="default">default image</button>
-                <button type="button" id="load">load image</button>
+                <button type="button" id="default">默认图片</button>
+                <button type="button" id="load">加载图片</button>
             </p>
-            <p class="center"><button type="button" id="show">show image</button></p>
-            <p><input type=checkbox id="enablerot"><label for="enablerot" id="enablerotlabel">enable rotation</label>
+            <p class="center"><button type="button" id="show">显示图片</button></p>
+            <p><input type=checkbox id="enablerot"><label for="enablerot" id="enablerotlabel">启用旋转</label>
             </p>
-            <p>shape: <select id="shape">
-                    <option value="1" selected>classic</option>
-                    <option value="2">triangle</option>
-                    <option value="3">round</option>
-                    <option value="4">straight</option>
+            <p>形状: <select id="shape">
+                    <option value="1" selected>经典</option>
+                    <option value="2">三角形</option>
+                    <option value="3">圆形</option>
+                    <option value="4">直线</option>
                 </select></p>
-            <p>number of pieces: <select id="nbpieces">
+            <p>拼图块数: <select id="nbpieces">
                     <option selected>12</option>
                     <option>25</option>
                     <option>50</option>
@@ -125,22 +125,21 @@ body {
                     <option>500</option>
                     <option>1000</option>
                 </select></p>
-            <p>between connected pieces: <select id="drawmode">
-                    <option value="1" selected>thin line</option>
-                    <option value="2">flat</option>
-                    <option value="3">bevel</option>
+            <p>连接线样式: <select id="drawmode">
+                    <option value="1" selected>细线</option>
+                    <option value="2">平面</option>
+                    <option value="3">斜面</option>
                 </select></p>
-            <p class="center"><button type="button" id="start">start game</button><button type="button" id="stop">stop
-                    game</button></p>
+            <p class="center"><button type="button" id="start">开始游戏</button><button type="button" id="stop">停止游戏</button></p>
             <hr>
-            <p>storage: <button type="button" id="helpstorage">?</button></p>
-            <p class="center"><button type="button" id="save">save game</button><button type="button"
-                    id="restore">restore game</button></p>
+            <p>本地存储: <button type="button" id="helpstorage">?</button></p>
+            <p class="center"><button type="button" id="save">保存游戏</button><button type="button"
+                    id="restore">恢复游戏</button></p>
             <hr>
-            <p>file: <button type="button" id="helpfile">?</button></p>
-            <p class="center"><button type="button" id="fsave">save game</button><button type="button"
-                    id="frestore">restore game</button></p>
-            <p>save name: <input type="text" id="saveas"><span id="saveext"></span></p>
+            <p>文件: <button type="button" id="helpfile">?</button></p>
+            <p class="center"><button type="button" id="fsave">保存游戏</button><button type="button"
+                    id="frestore">恢复游戏</button></p>
+            <p>保存名称: <input type="text" id="saveas"><span id="saveext"></span></p>
         </div> <!-- showhide -->
     </div> <!-- menu -->
     <script>
@@ -410,11 +409,11 @@ use :
 
             ui.open = () => {
                 menu.classList.remove("hidden");
-                controls.innerHTML = "close controls";
+                controls.innerHTML = "关闭控制面板";
             }
             ui.close = () => {
                 menu.classList.add("hidden");
-                controls.innerHTML = "open controls";
+                controls.innerHTML = "打开控制面板";
             }
 
             ui.waiting = () => {
@@ -512,24 +511,24 @@ use :
             });
         }
         //------------------------------------------------------------------------
-        const helptext = ["Thank you for playing my jigsaw puzzle game.",
-            "You can play with a default picture, or load any jpeg, png or other kind of picture from your computer.",
-            "Check the \"enable rotation\" checkbox to randomly rotate the pieces. Rotate the pieces by clicking/tapping them.",
-            "Choose from the different piece shapes available.",
-            "Choose the number of pieces. This is not an accurate value, depending on the dimensions of your picture, the exact number of pieces may be slightly different.",
-            "You can zoom in and out with the mouse wheel or by pinching, or with the keyboard keys Ctrl + and Ctrl -.",
-            "You can move the whole game at a time in any direction by touching the surface outside of any piece, and moving around. Combined with the zoom feature, this gives you access to a virtually unlimited game area.",
-            "Last, you can save a game in progress, and restore it later. Two methods are proposed, see individual help buttons for details."
+        const helptext = ["感谢游玩拼图游戏。",
+            "您可以使用默认图片，也可以从电脑加载任意 jpeg、png 或其他格式的图片。",
+            "勾选\"启用旋转\"复选框可随机旋转拼图块。点击/触摸拼图块可旋转它们。",
+            "可以选择不同的拼图块形状。",
+            "选择拼图块数量。这不是精确值，根据图片尺寸的不同，实际数量可能略有差异。",
+            "可以使用鼠标滚轮或双指缩放来放大缩小，也可以使用键盘快捷键 Ctrl + 和 Ctrl -。",
+            "您可以在拼图块外的空白区域拖动来移动整个游戏画面。配合缩放功能，您可以获得几乎无限的游戏区域。",
+            "您可以保存正在进行的游戏并在之后恢复。提供了两种保存方法，详见各自的帮助按钮。"
         ];
 
-        const helpstoragetext = ["With this method, the game is saved in your browser's data.",
-            "This method is fast - really a one-click action - but with a few drawbacks.",
-            "Although it is very popular, this method is not available on some devices.",
-            "Only one game can be saved at a time: every saved game replaces the previous one.",
-            "Furthermore, this method can fail, with locally loaded images bigger than a few Mb. A message will be issued in case of failure"];
+        const helpstoragetext = ["此方法将游戏保存在浏览器数据中。",
+            "此方法非常快捷——一键操作——但有一些限制。",
+            "虽然这是很常用的方法，但在某些设备上可能不可用。",
+            "同一时间只能保存一个游戏：每次保存都会覆盖之前的存档。",
+            "此外，当本地加载的图片超过几MB时，此方法可能会失败，届时会显示错误提示"];
 
-        const helpfiletext = ["This method stores the saved game in your download folder. Use the \"save name\" field to save different games with different names.",
-            "On some devices, you are not limited to the download folder: you will be prompted for the destination folder and name.",
+        const helpfiletext = ["此方法将游戏保存到您的下载文件夹。使用\"保存名称\"字段可以用不同名称保存不同游戏。",
+            "在某些设备上，您不限于下载文件夹：系统会提示您选择目标文件夹和文件名。",
         ];
         //------------------------------------------------------------------------
         //------------------------------------------------------------------------
