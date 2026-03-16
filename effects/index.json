@@ -7,6 +7,7 @@
   { "name": "彩花粒子爆发",     "cat": "环境与氛围", "file": "launch-cta-burst.html",   "icon": "🎆", "author": "FX Lab" },
   { "name": "纸屑射击",         "cat": "环境与氛围", "file": "confetti-shooter.html",    "icon": "🎊", "author": "FX Lab" },
   { "name": "烟花绽放",         "cat": "环境与氛围", "file": "fireworks.html",           "icon": "🎇", "author": "FX Lab" },
+  { "name": "乡村烟花",         "cat": "环境与氛围", "file": "fireworks-countryside.html","icon": "🌃", "author": "FX Lab" },
   { "name": "灰尘粒子",         "cat": "环境与氛围", "file": "dust-particles.html",       "icon": "🌫️", "author": "FX Lab" },
   { "name": "小火余烬",         "cat": "环境与氛围", "file": "embers-overlay.html",       "icon": "🔥", "author": "FX Lab" },
   { "name": "弧线余烬飞散",     "cat": "环境与氛围", "file": "embers-arc.html",           "icon": "🌋", "author": "FX Lab" },
