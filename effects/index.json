@@ -72,5 +72,7 @@
   { "name": "纯CSS雪花飘落",   "cat": "环境与氛围", "file": "snow-pure-css.html",       "icon": "🌨️", "author": "FX Lab" },
   { "name": "弹窗动画合集",     "cat": "UI与交互",   "file": "modal-animations.html",   "icon": "🪟", "author": "FX Lab" },
   { "name": "纯CSS模态弹窗",   "cat": "UI与交互",   "file": "css-only-modal.html",     "icon": "📋", "author": "FX Lab" },
-  { "name": "打破规则的滑块",   "cat": "UI与交互",   "file": "rule-breaking-slider.html","icon": "🎚️", "author": "FX Lab" }
+  { "name": "打破规则的滑块",   "cat": "UI与交互",   "file": "rule-breaking-slider.html","icon": "🎚️", "author": "FX Lab" },
+  { "name": "皮卡丘拼图游戏",   "cat": "UI与交互",   "file": "pikachu-puzzle.html",      "icon": "🧩", "author": "FX Lab" },
+  { "name": "自由拼图游戏",     "cat": "UI与交互",   "file": "jigsaw-puzzle.html",       "icon": "🧩", "author": "FX Lab" }
 ]
