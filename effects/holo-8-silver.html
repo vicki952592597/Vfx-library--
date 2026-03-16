@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>卡牌全息效果集 - 三卡预览版</title>
-<style>
+<title>SILVER 银色秘稀</title>
+﻿<style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
@@ -663,92 +663,36 @@ h1 { text-align: center; color: #fff; font-size: 28px; margin-bottom: 10px; font
     opacity: calc(var(--card-opacity) * var(--pointer-from-center) * 0.75);
 }
 </style>
-</head>
-<body>
 
-<h1>🃏 卡牌全息效果集 - 三卡预览版</h1>
-<p class="subtitle">移动鼠标查看3D倾斜+全息效果 | 每种效果展示3张不同卡牌</p>
+<h1>🥈 SILVER 银色秘稀</h1>
+<p class="subtitle">金属纹理+银色光泽 | 移动鼠标查看3D倾斜+全息效果</p>
 
-<!-- 效果分区样式 -->
-<style>
-.effect-section { max-width: 1100px; margin: 0 auto 60px; padding: 35px; background: rgba(255,255,255,0.02); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
-.effect-section h2 { color: #fff; font-size: 20px; margin-bottom: 6px; }
-.effect-section .desc { color: rgba(255,255,255,0.5); font-size: 13px; margin-bottom: 28px; }
-.cards-row { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
-.card-item { text-align: center; }
-.card-item .name { color: rgba(255,255,255,0.6); font-size: 11px; margin-top: 10px; }
-.effect-section .card { width: 220px; }
-</style>
-
-<!-- 1. HOLO -->
-<section class="effect-section"><h2>🌈 1. HOLO 经典全息</h2><p class="desc">扫描线+彩虹光谱</p><div class="cards-row">
-<div class="card-item"><div class="card holo" data-img="jiangwulang"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">江无浪</p></div>
-<div class="card-item"><div class="card holo" data-img="chenhu"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">尘狐</p></div>
-<div class="card-item"><div class="card holo" data-img="sweep"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">鸿音降世</p></div>
-</div></section>
-
-<!-- 2. COSMOS -->
-<section class="effect-section"><h2>✨ 2. COSMOS 宇宙星空</h2><p class="desc">三层星空纹理叠加</p><div class="cards-row">
-<div class="card-item"><div class="card cosmos" data-img="jiangwulang"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">江无浪</p></div>
-<div class="card-item"><div class="card cosmos" data-img="chenhu"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">尘狐</p></div>
-<div class="card-item"><div class="card cosmos" data-img="sweep"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">鸿音降世</p></div>
-</div></section>
-
-<!-- 3. AMAZING RARE -->
-<section class="effect-section"><h2>🌌 3. AMAZING RARE 神奇稀有</h2><p class="desc">闪光纹理+彩虹光晕</p><div class="cards-row">
-<div class="card-item"><div class="card galaxy" data-img="jiangwulang"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">江无浪</p></div>
-<div class="card-item"><div class="card galaxy" data-img="chenhu"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">尘狐</p></div>
-<div class="card-item"><div class="card galaxy" data-img="sweep"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">鸿音降世</p></div>
-</div></section>
-
-<!-- 4. RADIANT -->
-<section class="effect-section"><h2>☀️ 4. RADIANT 辐射金光</h2><p class="desc">闪光粒子+放射光芒</p><div class="cards-row">
-<div class="card-item"><div class="card radiant" data-img="jiangwulang"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">江无浪</p></div>
-<div class="card-item"><div class="card radiant" data-img="chenhu"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">尘狐</p></div>
-<div class="card-item"><div class="card radiant" data-img="sweep"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">鸿音降世</p></div>
-</div></section>
-
-<!-- 5. RAINBOW -->
-<section class="effect-section"><h2>🌈 5. RAINBOW 彩虹秘稀</h2><p class="desc">彩虹纹理+全色谱</p><div class="cards-row">
-<div class="card-item"><div class="card rainbow" data-img="jiangwulang"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">江无浪</p></div>
-<div class="card-item"><div class="card rainbow" data-img="chenhu"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">尘狐</p></div>
-<div class="card-item"><div class="card rainbow" data-img="sweep"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">鸿音降世</p></div>
-</div></section>
-
-<!-- 6. VSTAR -->
-<section class="effect-section"><h2>⚡ 6. VSTAR V星卡</h2><p class="desc">交叉网格+渐变光泽</p><div class="cards-row">
-<div class="card-item"><div class="card vstar" data-img="jiangwulang"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">江无浪</p></div>
-<div class="card-item"><div class="card vstar" data-img="chenhu"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">尘狐</p></div>
-<div class="card-item"><div class="card vstar" data-img="sweep"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">鸿音降世</p></div>
-</div></section>
-
-<!-- 7. GOLD -->
-<section class="effect-section"><h2>🥇 7. GOLD 金色秘稀</h2><p class="desc">金属纹理+金色流光</p><div class="cards-row">
-<div class="card-item"><div class="card gold" data-img="jiangwulang"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">江无浪</p></div>
-<div class="card-item"><div class="card gold" data-img="chenhu"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">尘狐</p></div>
-<div class="card-item"><div class="card gold" data-img="sweep"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">鸿音降世</p></div>
-</div></section>
-
-<!-- 8. SILVER -->
-<section class="effect-section"><h2>🥈 8. SILVER 银色秘稀</h2><p class="desc">金属纹理+银色光泽</p><div class="cards-row">
-<div class="card-item"><div class="card silver" data-img="jiangwulang"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">江无浪</p></div>
-<div class="card-item"><div class="card silver" data-img="chenhu"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">尘狐</p></div>
-<div class="card-item"><div class="card silver" data-img="sweep"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">鸿音降世</p></div>
-</div></section>
-
-<!-- 9. REVERSE -->
-<section class="effect-section"><h2>🔄 9. REVERSE 反转全息</h2><p class="desc">网格纹理+柔和反光</p><div class="cards-row">
-<div class="card-item"><div class="card reverse" data-img="jiangwulang"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">江无浪</p></div>
-<div class="card-item"><div class="card reverse" data-img="chenhu"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">尘狐</p></div>
-<div class="card-item"><div class="card reverse" data-img="sweep"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">鸿音降世</p></div>
-</div></section>
-
-<!-- 10. SHINY VAULT -->
-<section class="effect-section"><h2>💫 10. SHINY VAULT 闪亮银库</h2><p class="desc">银色全息+彩虹纹理</p><div class="cards-row">
-<div class="card-item"><div class="card illusion" data-img="jiangwulang"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">江无浪</p></div>
-<div class="card-item"><div class="card illusion" data-img="chenhu"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">尘狐</p></div>
-<div class="card-item"><div class="card illusion" data-img="sweep"><div class="card__front"><img src="" alt=""></div><div class="card__shine"></div><div class="card__glare"></div></div><p class="name">鸿音降世</p></div>
-</div></section>
+<div class="cards-grid" style="display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; padding: 40px;">
+    <div class="card-demo">
+        <div class="card silver" data-img="jiangwulang">
+            <div class="card__front"><img src="" alt=""></div>
+            <div class="card__shine"></div>
+            <div class="card__glare"></div>
+        </div>
+        <p class="name" style="color: rgba(255,255,255,0.6); font-size: 12px; margin-top: 12px; text-align: center;">江无浪</p>
+    </div>
+    <div class="card-demo">
+        <div class="card silver" data-img="chenhu">
+            <div class="card__front"><img src="" alt=""></div>
+            <div class="card__shine"></div>
+            <div class="card__glare"></div>
+        </div>
+        <p class="name" style="color: rgba(255,255,255,0.6); font-size: 12px; margin-top: 12px; text-align: center;">尘狐</p>
+    </div>
+    <div class="card-demo">
+        <div class="card silver" data-img="sweep">
+            <div class="card__front"><img src="" alt=""></div>
+            <div class="card__shine"></div>
+            <div class="card__glare"></div>
+        </div>
+        <p class="name" style="color: rgba(255,255,255,0.6); font-size: 12px; margin-top: 12px; text-align: center;">鸿音降世</p>
+    </div>
+</div>
 
 <script>
 // 三张卡牌图片
