@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crystal Holographic Array</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #F5F5F7;
+            --glass-bg: rgba(15, 15, 18, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-highlight: rgba(255, 255, 255, 0.25);
+            --text-main: #FFFFFF;
+            --text-muted: rgba(255, 255, 255, 0.5);
+            --accent: #ff003c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow: hidden;
+            perspective: 2000px;
+        }
+
+        .component-housing {
+            position: relative;
+            width: 480px;
+            height: 720px;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+            will-change: transform;
+            box-shadow: 
+                0 40px 100px -20px rgba(0,0,0,0.15),
+                0 10px 30px -10px rgba(0,0,0,0.1);
+            border-radius: 32px;
+        }
+
+        #canvas-container {
+            position: absolute;
+            inset: 0;
+            border-radius: 32px;
+            overflow: hidden;
+            background: #000;
+            z-index: 1;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            filter: contrast(1.2) saturate(1.1);
+        }
+
+        .glass-card {
+            position: absolute;
+            inset: 20px;
+            z-index: 2;
+            border-radius: 24px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(40px) saturate(120%);
+            -webkit-backdrop-filter: blur(40px) saturate(120%);
+            border: 1px solid var(--glass-border);
+            box-shadow: 
+                inset 0 1px 0 0 var(--glass-highlight),
+                inset 0 0 0 1px rgba(0,0,0,0.2),
+                0 20px 40px -10px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 32px;
+            transform: translateZ(40px);
+            overflow: hidden;
+        }
+
+        .shutter-lattice {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background-image: repeating-linear-gradient(
+                to bottom,
+                transparent,
+                transparent 3px,
+                rgba(0, 0, 0, 0.15) 3px,
+                rgba(0, 0, 0, 0.15) 4px
+            );
+            mix-blend-mode: overlay;
+            opacity: 0.7;
+        }
+
+        .glass-glare {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0) 40%,
+                rgba(0, 0, 0, 0.2) 100%
+            );
+            z-index: 0;
+        }
+
+        .ui-layer {
+            position: relative;
+            z-index: 10;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 20px;
+            height: 20px;
+            border: 1.5px solid var(--text-main);
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .brand-icon::after {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            background: var(--text-main);
+            border-radius: 1px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            color: var(--text-main);
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--text-main);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--text-main);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; box-shadow: 0 0 5px var(--text-main); }
+            50% { opacity: 1; box-shadow: 0 0 15px var(--text-main); }
+            100% { opacity: 0.5; box-shadow: 0 0 5px var(--text-main); }
+        }
+
+        .core-info {
+            margin-top: auto;
+            margin-bottom: 40px;
+        }
+
+        .label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        h1 {
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--text-main);
+            line-height: 1;
+            margin-bottom: 4px;
+            font-feature-settings: "cv11", "ss01";
+        }
+
+        .subtitle {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-muted);
+            letter-spacing: 0.02em;
+        }
+
+        .metadata-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .data-block {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .data-label {
+            font-size: 9px;
+            font-weight: 500;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .data-value {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-main);
+            font-family: 'Inter', monospace;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.02em;
+        }
+
+        .frame-mark {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border: 1px solid var(--text-muted);
+            opacity: 0.3;
+            z-index: 10;
+        }
+        .fm-tl { top: 16px; left: 16px; border-right: none; border-bottom: none; }
+        .fm-tr { top: 16px; right: 16px; border-left: none; border-bottom: none; }
+        .fm-bl { bottom: 16px; left: 16px; border-right: none; border-top: none; }
+        .fm-br { bottom: 16px; right: 16px; border-left: none; border-top: none; }
+    </style>
+</head>
+<body>
+
+    <div class="component-housing" id="housing">
+        <div id="canvas-container"></div>
+
+        <div class="glass-card" id="card">
+            <div class="glass-glare"></div>
+            <div class="shutter-lattice"></div>
+            
+            <div class="frame-mark fm-tl"></div>
+            <div class="frame-mark fm-tr"></div>
+            <div class="frame-mark fm-bl"></div>
+            <div class="frame-mark fm-br"></div>
+
+            <div class="ui-layer">
+                <div class="header">
+                    <div class="brand">
+                        <div class="brand-icon"></div>
+                    </div>
+                    <div class="status">
+                        <div class="dot"></div>
+                        <span>SYNCED</span>
+                    </div>
+                </div>
+
+                <div class="core-info">
+                    <span class="label">OPTICAL ARRAY</span>
+                    <h1>PRISMATIC<br>CORE</h1>
+                    <div class="subtitle">Volumetric refraction interface</div>
+                </div>
+
+                <div class="metadata-grid">
+                    <div class="data-block">
+                        <span class="data-label">FREQ / HZ</span>
+                        <span class="data-value" id="val-freq">144.02</span>
+                    </div>
+                    <div class="data-block">
+                        <span class="data-label">LUM / NITS</span>
+                        <span class="data-value" id="val-lum">1600.MAX</span>
+                    </div>
+                    <div class="data-block">
+                        <span class="data-label">PHASE / RAD</span>
+                        <span class="data-value" id="val-phase">0.84π</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ================================================================
+           Crystal Holographic Array
+           棱镜全息卡牌 — Three.js Shader + 毛玻璃UI + 3D透视跟随
+           ================================================================ */
+
+        const housing = document.getElementById('housing');
+        const freqVal = document.getElementById('val-freq');
+        const phaseVal = document.getElementById('val-phase');
+        let mouseX = 0;
+        let mouseY = 0;
+        let targetX = 0;
+        let targetY = 0;
+        const windowHalfX = window.innerWidth / 2;
+        const windowHalfY = window.innerHeight / 2;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX - windowHalfX);
+            mouseY = (e.clientY - windowHalfY);
+        });
+
+        /* Three.js 场景初始化 */
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        /* Fragment Shader — 棱镜色带折射 */
+        const fragmentShader = `
+            uniform float u_time;
+            uniform vec2 u_mouse;
+            uniform vec2 u_resolution;
+            
+            vec3 colorBand(float t) {
+                vec3 col = vec3(0.0);
+                
+                float c1 = smoothstep(0.0, 0.1, t) - smoothstep(0.1, 0.2, t);
+                col += c1 * vec3(0.0, 0.1, 1.0);
+                
+                float c2 = smoothstep(0.15, 0.25, t) - smoothstep(0.25, 0.4, t);
+                col += c2 * vec3(0.0);
+                
+                float c3 = smoothstep(0.35, 0.45, t) - smoothstep(0.45, 0.6, t);
+                col += c3 * vec3(1.0, 0.0, 0.1);
+                
+                float c4 = smoothstep(0.55, 0.65, t) - smoothstep(0.65, 0.8, t);
+                col += c4 * vec3(1.0, 0.4, 0.0);
+                
+                float c5 = smoothstep(0.75, 0.85, t) - smoothstep(0.85, 0.95, t);
+                col += c5 * vec3(1.0, 1.0, 1.0);
+                
+                float c6 = smoothstep(0.9, 1.0, t);
+                col += c6 * vec3(0.0, 0.8, 0.2);
+                
+                return col;
+            }
+
+            void main() {
+                vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+                vec2 p = uv * 2.0 - 1.0;
+                p.x *= u_resolution.x / u_resolution.y;
+
+                vec2 m = u_mouse * 2.0 - 1.0;
+                m.x *= u_resolution.x / u_resolution.y;
+
+                float bands = 40.0;
+                float shutterOffset = sin(uv.x * bands) * 0.01 * m.x;
+                p.y += shutterOffset;
+                
+                float d = length(p - m * 0.2);
+                float angle = atan(p.y, p.x);
+                
+                float sweep = sin(angle * 2.0 + u_time * 0.5) * 0.5;
+                float pattern = fract(d * 1.5 + sweep - u_time * 0.2);
+                
+                float intersection = cos(p.x * 3.0 - p.y * 2.0 + u_time) * 0.5 + 0.5;
+                
+                float finalVal = fract(pattern + intersection * 0.2);
+                
+                vec3 color = colorBand(finalVal);
+                
+                color *= smoothstep(2.0, 0.0, d);
+                color = pow(color, vec3(0.8));
+                
+                gl_FragColor = vec4(color, 1.0);
+            }
+        `;
+
+        const vertexShader = `
+            void main() {
+                gl_Position = vec4(position, 1.0);
+            }
+        `;
+
+        const uniforms = {
+            u_time: { value: 0.0 },
+            u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
+            u_resolution: { value: new THREE.Vector2(container.clientWidth, container.clientHeight) }
+        };
+
+        const material = new THREE.ShaderMaterial({
+            uniforms: uniforms,
+            fragmentShader: fragmentShader,
+            vertexShader: vertexShader
+        });
+
+        const plane = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
+        scene.add(plane);
+
+        /* 主渲染循环 */
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            targetX = mouseX * 0.001;
+            targetY = mouseY * 0.001;
+
+            /* 数据面板随机抖动 */
+            if (Math.random() > 0.9) {
+                freqVal.innerText = (144.00 + Math.random() * 0.1).toFixed(2);
+                phaseVal.innerText = (0.80 + Math.random() * 0.09).toFixed(2) + "π";
+            }
+
+            /* 3D 透视跟随鼠标 */
+            housing.style.transform = `
+                rotateX(${-targetY * 15}deg) 
+                rotateY(${targetX * 15}deg)
+            `;
+
+            /* 更新 Shader uniforms */
+            uniforms.u_time.value = clock.getElapsedTime();
+            
+            let normMouseX = (mouseX + windowHalfX) / window.innerWidth;
+            let normMouseY = 1.0 - ((mouseY + windowHalfY) / window.innerHeight);
+            
+            uniforms.u_mouse.value.x += (normMouseX - uniforms.u_mouse.value.x) * 0.1;
+            uniforms.u_mouse.value.y += (normMouseY - uniforms.u_mouse.value.y) * 0.1;
+
+            renderer.render(scene, camera);
+        }
+
+        /* 窗口自适应 */
+        window.addEventListener('resize', () => {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            renderer.setSize(width, height);
+            uniforms.u_resolution.value.set(width, height);
+        });
+
+        animate();
+    </script>
+
+</body>
+</html>
