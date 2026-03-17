@@ -48,6 +48,7 @@
   { "name": "全息效果-反转全息",   "cat": "卡牌专属",   "file": "holo-9-reverse.html",  "icon": "🔄", "author": "大神App" },
   { "name": "全息效果-闪亮银库",   "cat": "卡牌专属",   "file": "holo-10-shiny.html",   "icon": "💫", "author": "大神App" },
   { "name": "棱镜全息阵列",     "cat": "卡牌专属",   "file": "crystal-holo-array.html", "icon": "🔮", "author": "FX Lab" },
+  { "name": "棱镜协议卡",       "cat": "卡牌专属",   "file": "prismatic-protocol.html", "icon": "💠", "author": "FX Lab" },
   { "name": "动态法线贴图",     "cat": "材质与遮罩", "file": "normal-map.html",         "icon": "🗺️", "author": "FX Lab" },
   { "name": "溶解消散遮罩",     "cat": "材质与遮罩", "file": "dissolve-mask.html",      "icon": "💨", "author": "FX Lab" },
   { "name": "水晶折射材质",     "cat": "材质与遮罩", "file": "crystal-refraction.html", "icon": "🔮", "author": "FX Lab" },
