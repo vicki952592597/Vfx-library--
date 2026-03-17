@@ -73,5 +73,10 @@
   { "name": "纯CSS模态弹窗",   "cat": "UI与交互",   "file": "css-only-modal.html",     "icon": "📋", "author": "FX Lab" },
   { "name": "打破规则的滑块",   "cat": "UI与交互",   "file": "rule-breaking-slider.html","icon": "🎚️", "author": "FX Lab" },
   { "name": "皮卡丘拼图游戏",   "cat": "UI与交互",   "file": "pikachu-puzzle.html",      "icon": "🧩", "author": "FX Lab" },
-  { "name": "自由拼图游戏",     "cat": "UI与交互",   "file": "jigsaw-puzzle.html",       "icon": "🧩", "author": "FX Lab" }
+  { "name": "自由拼图游戏",     "cat": "UI与交互",   "file": "jigsaw-puzzle.html",       "icon": "🧩", "author": "FX Lab" },
+  { "name": "鼠标跟随光边按钮", "cat": "UI与交互",   "file": "uv-modern-mouse-btn.html", "icon": "🖱️", "author": "uiverse/Itskrish01" },
+  { "name": "涟漪发光按钮",     "cat": "UI与交互",   "file": "uv-ripple-glow-btn.html",  "icon": "💜", "author": "uiverse/mobinkakei" },
+  { "name": "渐变旋转边框按钮", "cat": "UI与交互",   "file": "uv-gradient-spin-btn.html","icon": "🌀", "author": "uiverse/Cobp" },
+  { "name": "粒子爆炸按钮",     "cat": "UI与交互",   "file": "uv-particle-burst-btn.html","icon": "💥", "author": "uiverse/Smit-Prajapati" },
+  { "name": "液体填充按钮",     "cat": "UI与交互",   "file": "uv-liquid-fill-btn.html",  "icon": "🌊", "author": "uiverse/vinodjangid07" }
 ]

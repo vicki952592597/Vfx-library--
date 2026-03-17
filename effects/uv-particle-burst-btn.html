@@ -1,0 +1,145 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Particle Explosion Button</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;display:flex;align-items:center;justify-content:center;height:100vh;overflow:hidden;font-family:'Segoe UI',system-ui,sans-serif}
+
+.btn-container {
+  position: relative;
+}
+
+.btn {
+  position: relative;
+  padding: 14px 40px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  overflow: visible;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
+}
+
+.btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.particle {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  animation: particle-fly 0.8s ease-out forwards;
+}
+
+@keyframes particle-fly {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty)) scale(0);
+  }
+}
+
+/* Shimmer effect */
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transform: skewX(-25deg);
+  transition: left 0.5s;
+}
+
+.btn:hover::before {
+  left: 125%;
+}
+
+/* Pulse ring on click */
+.pulse {
+  position: absolute;
+  border: 2px solid rgba(102, 126, 234, 0.6);
+  border-radius: 10px;
+  inset: 0;
+  animation: pulse-expand 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes pulse-expand {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+</style></head><body>
+
+<div class="btn-container" id="container">
+  <button class="btn" id="btn">Click Me</button>
+</div>
+
+<script>
+const btn = document.getElementById('btn');
+const container = document.getElementById('container');
+const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#ffd700'];
+
+btn.addEventListener('click', function(e) {
+  // Create particles
+  const rect = btn.getBoundingClientRect();
+  const cx = e.clientX - rect.left;
+  const cy = e.clientY - rect.top;
+  
+  for (let i = 0; i < 30; i++) {
+    const particle = document.createElement('span');
+    particle.className = 'particle';
+    const size = Math.random() * 8 + 3;
+    const angle = Math.random() * Math.PI * 2;
+    const distance = Math.random() * 120 + 40;
+    const tx = Math.cos(angle) * distance;
+    const ty = Math.sin(angle) * distance;
+    
+    particle.style.cssText = `
+      width: ${size}px;
+      height: ${size}px;
+      background: ${colors[Math.floor(Math.random() * colors.length)]};
+      left: ${cx}px;
+      top: ${cy}px;
+      --tx: ${tx}px;
+      --ty: ${ty}px;
+      animation-duration: ${Math.random() * 0.4 + 0.5}s;
+    `;
+    
+    btn.appendChild(particle);
+    particle.addEventListener('animationend', () => particle.remove());
+  }
+  
+  // Create pulse ring
+  const pulse = document.createElement('span');
+  pulse.className = 'pulse';
+  container.appendChild(pulse);
+  pulse.addEventListener('animationend', () => pulse.remove());
+});
+</script>
+</body></html>

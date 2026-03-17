@@ -1,0 +1,121 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Gradient Border Spin Button</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;display:flex;align-items:center;justify-content:center;height:100vh;overflow:hidden;font-family:'Segoe UI',system-ui,sans-serif}
+
+.btn {
+  position: relative;
+  padding: 16px 48px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #fff;
+  background: #111;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  z-index: 1;
+  overflow: hidden;
+  transition: color 0.3s, transform 0.2s;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border-radius: 50px;
+  background: conic-gradient(
+    from var(--angle, 0deg),
+    #ff4545,
+    #00ff87,
+    #60a5fa,
+    #f472b6,
+    #facc15,
+    #ff4545
+  );
+  z-index: -2;
+  animation: spin 3s linear infinite;
+}
+
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50px;
+  background: #111;
+  z-index: -1;
+  transition: background 0.3s;
+}
+
+.btn:hover::after {
+  background: #1a1a2e;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+@keyframes spin {
+  to {
+    --angle: 360deg;
+  }
+}
+
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* Fallback animation for browsers that don't support @property */
+@supports not (background: conic-gradient(from 0deg, red, blue)) {
+  .btn::before {
+    background: linear-gradient(135deg, #ff4545, #00ff87, #60a5fa, #f472b6);
+    background-size: 300% 300%;
+    animation: gradient-move 3s ease infinite;
+  }
+  @keyframes gradient-move {
+    0%,100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+}
+
+/* Glow effect */
+.wrapper {
+  position: relative;
+}
+.wrapper::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50px;
+  background: conic-gradient(
+    from var(--angle, 0deg),
+    #ff4545,
+    #00ff87,
+    #60a5fa,
+    #f472b6,
+    #facc15,
+    #ff4545
+  );
+  filter: blur(20px);
+  opacity: 0.4;
+  z-index: -1;
+  animation: spin 3s linear infinite;
+}
+</style></head><body>
+
+<div class="wrapper">
+  <button class="btn">Click Me</button>
+</div>
+
+</body></html>
