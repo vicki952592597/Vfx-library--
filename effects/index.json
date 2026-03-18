@@ -77,5 +77,6 @@
   { "name": "皮卡丘拼图游戏",   "cat": "UI与交互",   "file": "pikachu-puzzle.html",      "icon": "🧩", "author": "FX Lab" },
   { "name": "自由拼图游戏",     "cat": "UI与交互",   "file": "jigsaw-puzzle.html",       "icon": "🧩", "author": "FX Lab" },
   { "name": "涟漪发光按钮",     "cat": "UI与交互",   "file": "uv-ripple-glow-btn.html",  "icon": "💜", "author": "uiverse/mobinkakei" },
-  { "name": "渐变旋转边框按钮", "cat": "UI与交互",   "file": "uv-gradient-spin-btn.html","icon": "🌀", "author": "uiverse/Cobp" }
+  { "name": "渐变旋转边框按钮", "cat": "UI与交互",   "file": "uv-gradient-spin-btn.html","icon": "🌀", "author": "uiverse/Cobp" },
+  { "name": "AI动效-6套主题色", "cat": "定制AI动效", "file": "ai-ui-effects.html",       "icon": "🤖", "author": "FX Lab" }
 ]
