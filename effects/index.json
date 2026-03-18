@@ -20,7 +20,6 @@
   { "name": "粒子交互背景",     "cat": "UI与交互",   "file": "particles-interactive.html","icon": "🔵", "author": "FX Lab" },
   { "name": "流体下载动画",     "cat": "UI与交互",   "file": "fluid-download.html",     "icon": "⬇️", "author": "FX Lab" },
   { "name": "3D骰子物理模拟",   "cat": "UI与交互",   "file": "3d-dices.html",           "icon": "🎲", "author": "FX Lab" },
-  { "name": "炫彩流动搜索框",   "cat": "UI与交互",   "file": "gemini-input.html",       "icon": "🔍", "author": "FX Lab" },
   { "name": "运动模糊加载动画", "cat": "UI与交互",   "file": "loader-motion.html",      "icon": "⏳", "author": "FX Lab" },
   { "name": "金属流动按钮",     "cat": "UI与交互",   "file": "metal-flow-btn.html",     "icon": "⚙️", "author": "FX Lab" },
   { "name": "弹窗覆盖层",       "cat": "UI与交互",   "file": "pop-up-overlay.html",     "icon": "🪟", "author": "FX Lab" },
@@ -76,7 +75,11 @@
   { "name": "打破规则的滑块",   "cat": "UI与交互",   "file": "rule-breaking-slider.html","icon": "🎚️", "author": "FX Lab" },
   { "name": "皮卡丘拼图游戏",   "cat": "UI与交互",   "file": "pikachu-puzzle.html",      "icon": "🧩", "author": "FX Lab" },
   { "name": "自由拼图游戏",     "cat": "UI与交互",   "file": "jigsaw-puzzle.html",       "icon": "🧩", "author": "FX Lab" },
-  { "name": "涟漪发光按钮",     "cat": "UI与交互",   "file": "uv-ripple-glow-btn.html",  "icon": "💜", "author": "uiverse/mobinkakei" },
-  { "name": "渐变旋转边框按钮", "cat": "UI与交互",   "file": "uv-gradient-spin-btn.html","icon": "🌀", "author": "uiverse/Cobp" },
-  { "name": "AI动效-6套主题色", "cat": "定制AI动效", "file": "ai-ui-effects.html",       "icon": "🤖", "author": "FX Lab" }
+  { "name": "AI动效-6套主题色", "cat": "定制AI动效", "file": "ai-ui-effects.html",       "icon": "🤖", "author": "FX Lab" },
+  { "name": "炫彩流动搜索框",   "cat": "定制AI动效", "file": "gemini-input.html",       "icon": "🔍", "author": "FX Lab" },
+  { "name": "涟漪发光按钮",     "cat": "定制AI动效", "file": "uv-ripple-glow-btn.html",  "icon": "💜", "author": "uiverse/mobinkakei" },
+  { "name": "渐变旋转边框按钮", "cat": "定制AI动效", "file": "uv-gradient-spin-btn.html","icon": "🌀", "author": "uiverse/Cobp" },
+  { "name": "磨砂UI组件",       "cat": "定制AI动效", "file": "glassmorphism-ui-kit.html","icon": "🧊", "author": "FX Lab" },
+  { "name": "图标动效",         "cat": "定制AI动效", "file": "gemini-icon-anim.html",    "icon": "✦",  "author": "FX Lab" },
+  { "name": "玻璃搜索框",       "cat": "定制AI动效", "file": "glass-search-ui.html",     "icon": "🔎", "author": "FX Lab" }
 ]
