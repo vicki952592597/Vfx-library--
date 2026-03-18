@@ -82,5 +82,6 @@
   { "name": "磨砂UI组件",       "cat": "定制AI动效", "file": "glassmorphism-ui-kit.html","icon": "🧊", "author": "FX Lab" },
   { "name": "图标动效",         "cat": "定制AI动效", "file": "gemini-icon-anim.html",    "icon": "✦",  "author": "FX Lab" },
   { "name": "玻璃搜索框",       "cat": "定制AI动效", "file": "glass-search-ui.html",     "icon": "🔎", "author": "FX Lab" },
-  { "name": "渐变旋转加载器",   "cat": "定制AI动效", "file": "uv-gradient-spinner.html", "icon": "🌀", "author": "uiverse/xXJollyHAKERXx" }
+  { "name": "渐变旋转加载器",   "cat": "定制AI动效", "file": "uv-gradient-spinner.html", "icon": "🌀", "author": "uiverse/xXJollyHAKERXx" },
+  { "name": "霓虹发光悬停卡片", "cat": "定制AI动效", "file": "uv-glow-card-hover.html",  "icon": "💳", "author": "uiverse" }
 ]
